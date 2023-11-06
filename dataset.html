@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Display Random Data with D3.js</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0; /* Remove default margin */
+            background: #f0f0f0; /* Background color for better readability */
+        }
+        .table-container {
+            margin: 20px;
+            text-align: center;
+            overflow: auto; /* Use 'auto' to make the table scrollable when needed */
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="table-container">
+        <h2>Goalscorers</h2>
+        <div id="goalscorers"></div>
+    </div>
+    <div class="table-container">
+        <h2>Results</h2>
+        <div id="results"></div>
+    </div>
+    <div class="table-container">
+        <h2>Shootouts</h2>
+        <div id="shootouts"></div>
+    </div>
+
+    <script>
+        // Function to select a random subset of data
+        function getRandomSubset(data, count) {
+            return d3.shuffle(data).slice(0, count);
+        }
+
+        // Function to create and display a table with a heading
+        function createTable(containerId, data, headingText) {
+            const container = d3.select(`#${containerId}`);
+
+            // Select a random subset of 20 rows
+            const randomData = getRandomSubset(data, 20);
+
+            // Create a table and display the data
+            const table = container.append("table");
+            const header = table.append("thead").append("tr");
+            header.selectAll("th")
+                .data(Object.keys(randomData[0]))
+                .enter()
+                .append("th")
+                .text(d => d);
+
+            const rows = table.append("tbody").selectAll("tr")
+                .data(randomData)
+                .enter()
+                .append("tr");
+
+            rows.selectAll("td")
+                .data(d => Object.values(d))
+                .enter()
+                .append("td")
+                .text(d => d);
+        }
+
+        // Load the JSON data using D3.js
+        d3.json("data/goalscorers.json").then(function(goalscorersData) {
+            createTable("goalscorers", goalscorersData, "Goalscorers");
+        });
+
+        d3.json("data/result.json").then(function(resultsData) {
+            createTable("results", resultsData, "Results");
+        });
+
+        d3.json("data/shootouts.json").then(function(shootoutsData) {
+            createTable("shootouts", shootoutsData, "Shootouts");
+        });
+    </script>
+</body>
+</html>

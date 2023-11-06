@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main Page</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            height: 100vh; /* Make the body fill the viewport height */
+            margin: 0; /* Remove default margin */
+            background-image: url('https://images.livemint.com/rf/Image-621x414/LiveMint/Period2/2018/12/25/Photos/Processed/Messi%20Ronaldo-kcGH--621x414@LiveMint.JPG'); /* Set the background image */
+            background-size: cover; /* Cover the entire viewport */
+            background-repeat: no-repeat; /* No image repetition */
+            animation: backgroundAnimation 10s linear infinite; /* Apply animation */
+        }
+
+        /* Animation for background */
+        @keyframes backgroundAnimation {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 100%; }
+        }
+
+        h1 {
+            color: white; /* Set text color to white for better visibility */
+            text-align: center;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #5aa9ff; /* Button background color */
+            color: #fff; /* Text color */
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        a:hover {
+            background-color: #5aa9ff; /* Button background color on hover */
+            transform: scale(1.1); /* Enlarge the button on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Project - 19</h1>
+    <h1>International football results from 1872 to 2023</h1>
+    <a href="dataset.html">Data Set</a>
+    <a href="globe.html">Globe</a>
+</body>
+</html>
