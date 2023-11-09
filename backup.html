@@ -7,15 +7,15 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
-      margin: 40px; /* Doubled the margin */
+      margin: 40px;
+      /* Double the margin */
       overflow: hidden;
-      background-color: black; /* Set the background color to black */
-      color: white; /* Set the text color to white */
     }
 
     #map {
-      border: 1px solid black; /* Add a thin black border */
-      background-color: #009dc4;
+      border: 1px solid black;
+      /* Add a thin black border */
+      background-color: rgb(91, 134, 198);
     }
 
     path {
@@ -42,7 +42,6 @@
 
     .city {
       fill: black;
-      stroke: none;
     }
 
     .city:hover {
@@ -58,13 +57,21 @@
 
     .info-box {
       position: absolute;
-      left: 20px; /* Adjust the position to prevent overlapping */
-      top: 20px; /* Adjust the position to prevent overlapping */
+      margin-bottom: 2px;
+      left: 10px;
+      top: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 5px;
+      border: 1px;
+    }
+
+    body {
+      background-color: black;
     }
   </style>
 </head>
 
-<body>
+<body id="back">
   <svg id="map"></svg>
   <div class="info-box"></div>
 

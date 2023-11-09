@@ -1,63 +1,38 @@
-# import json
-
-# # Read and parse the GeoJSON file
-# with open('world-countries.geojson', 'r') as geojson_file:
-#     geojson_data = json.load(geojson_file)
-
-# # Read and parse the result JSON file
-# with open('data/results.json', 'r') as result_file:
-#     result_data = json.load(result_file)
-
-# # Iterate through result_data and merge it into geojson_data
-# for match in result_data:
-#     match_country = match['country']
-#     for feature in geojson_data['features']:
-#         feature_properties = feature['properties']
-#         if 'country' in feature_properties and feature_properties['country'] == match_country:
-#             feature_properties['match_info'] = {
-#                 'date': match['date'],
-#                 'home_team': match['home_team'],
-#                 'away_team': match['away_team'],
-#                 'city': match['city'],
-#                 'country': match['country']
-#             }
-
-# # Write the merged GeoJSON data back to the file
-# with open('merged_word.geojson', 'w') as merged_geojson_file:
-#     json.dump(geojson_data, merged_geojson_file)
 import json
 from geopy.geocoders import Photon
+from itertools import islice
 
-# Define the JSON data
-data = {
-   "date": "1916-06-25",
-   "home_team": "Norway",
-   "away_team": "Denmark",
-   "home_score": 0,
-   "away_score": 2,
-   "tournament": "Friendly",
-   "city": "Kristiania",
-   "country": "Norway",
-   "neutral": False
-}
+# Define the maximum batch size (you can adjust this as needed)
+batch_size = 2000
 
 # Create a geocoder object
 geolocator = Photon(user_agent="myGeocoder")
 
-# Use the geocoder to obtain the location information
-location = geolocator.geocode(f"{data['city']}, {data['country']}")
+# Function to add latitude and longitude to a batch of matches
+def add_lat_long_to_batch(batch):
+    for match in batch:
+        # Use the geocoder to obtain the location information
+        location = geolocator.geocode(f"{match['city']}, {match['country']}")
 
-if location:
-    # Extract latitude and longitude
-    data['city_latitude'] = location.latitude
-    data['city_longitude'] = location.longitude
+        if location:
+            # Extract latitude and longitude
+            match['city_latitude'] = location.latitude
+            match['city_longitude'] = location.longitude
 
-    # Serialize the data to JSON
-    json_data = json.dumps(data, indent=4)
+# Process the JSON file in chunks
+with open("work.json", "r") as json_file:
+    while True:
+        chunk = list(islice(json_file, batch_size))
+        if not chunk:
+            break
+        
+        match_data = json.loads("".join(chunk))
+        add_lat_long_to_batch(match_data)
+        
+        # Serialize and write the updated data back to a separate output file
+        json_data = json.dumps(match_data, indent=4)
+        with open("output.json", "a") as output_file:
+            output_file.write(json_data)
+            output_file.write("\n")
 
-    # Write the updated data back to the file
-    with open("work.json", "w") as json_file:
-        json_file.write(json_data)
-    print("Latitude and longitude added to the JSON data.")
-else:
-    print("Location not found for the given city and country.")
+print("Latitude and longitude added to the JSON data and saved in 'output.json'.")
