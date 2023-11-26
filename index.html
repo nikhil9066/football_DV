@@ -6,17 +6,16 @@
         body {
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Center vertically */
-            align-items: center; /* Center horizontally */
-            height: 100vh; /* Make the body fill the viewport height */
-            margin: 0; /* Remove default margin */
-            background-image: url('https://images.livemint.com/rf/Image-621x414/LiveMint/Period2/2018/12/25/Photos/Processed/Messi%20Ronaldo-kcGH--621x414@LiveMint.JPG'); /* Set the background image */
-            background-size: cover; /* Cover the entire viewport */
-            background-repeat: no-repeat; /* No image repetition */
-            animation: backgroundAnimation 10s linear infinite; /* Apply animation */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('https://images.livemint.com/rf/Image-621x414/LiveMint/Period2/2018/12/25/Photos/Processed/Messi%20Ronaldo-kcGH--621x414@LiveMint.JPG');
+            background-size: cover;
+            background-repeat: no-repeat;
+            animation: backgroundAnimation 10s linear infinite;
         }
 
-        /* Animation for background */
         @keyframes backgroundAnimation {
             0% { background-position: 0 0; }
             100% { background-position: 100% 100%; }
@@ -50,5 +49,11 @@
     <h1>International football results from 1872 to 2023</h1>
     <a href="dataset.html">Data Set</a>
     <a href="globe.html">Globe</a>
+    <script>
+        // Additional script for redirecting to the globe page
+        function redirectToGlobe() {
+            window.location.href = 'globe.html';
+        }
+    </script>
 </body>
 </html>

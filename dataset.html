@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <title>Display Random Data with D3.js</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -10,26 +11,55 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            margin: 0; /* Remove default margin */
-            background: #f0f0f0; /* Background color for better readability */
+            margin: 0;
+            background: #f0f0f0;
         }
+
         .table-container {
             margin: 20px;
             text-align: center;
-            overflow: auto; /* Use 'auto' to make the table scrollable when needed */
+            overflow: auto;
         }
+
         table {
             border-collapse: collapse;
             width: 100%;
         }
-        table, th, td {
+
+        table,
+        th,
+        td {
             border: 1px solid black;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
+        @media (max-width: 600px) {
+            /* Add styles for smaller screens here */
+        }
+
+        .next-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #5aa9ff;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .next-button:hover {
+            background-color: #5aa9ff;
+            transform: scale(1.1);
+        }
     </style>
 </head>
+
 <body>
     <div class="table-container">
         <h2>Goalscorers</h2>
@@ -79,17 +109,21 @@
         }
 
         // Load the JSON data using D3.js
-        d3.json("data/goalscorers.json").then(function(goalscorersData) {
+        d3.json("data/goalscorers.json").then(function (goalscorersData) {
             createTable("goalscorers", goalscorersData, "Goalscorers");
         });
 
-        d3.json("data/result.json").then(function(resultsData) {
+        d3.json("data/result.json").then(function (resultsData) {
             createTable("results", resultsData, "Results");
         });
 
-        d3.json("data/shootouts.json").then(function(shootoutsData) {
+        d3.json("data/shootouts.json").then(function (shootoutsData) {
             createTable("shootouts", shootoutsData, "Shootouts");
         });
     </script>
+
+    <!-- Add Next button to redirect to globe.html -->
+    <a href="globe.html" class="next-button">Next</a>
 </body>
+
 </html>
