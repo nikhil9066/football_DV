@@ -6,7 +6,6 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-    <div id="visualization"></div>
     <div>
         <input type="button" value="AFC Asian Cup" onclick="updateData('AFC Asian Cup')">
         <input type="button" value="African Cup of Nations" onclick="updateData('African Cup of Nations')">
@@ -17,21 +16,10 @@
         <input type="button" value="UEFA Nations League" onclick="updateData('UEFA Nations League')">
         <input type="button" value="UEFA Euro" onclick="updateData('UEFA Euro')">
     </div>
+    <div id="visualization"></div>
     <script>
-        // Fetch the data from the JSON file
-        d3.json("data/result.json").then(function(results) {
-            const width = 500;
-            const height = 200;
-            const margin = { top: 20, right: 20, bottom: 30, left: 40 };
-
-            let selectedTournament = "AFC Asian Cup"; // Default tournament
-
-            function updateData(tournament) {
-                selectedTournament = tournament;
-                updateVisualization();
-            }
-
-            function updateVisualization() {
+        function updateData(selectedTournament) {
+            d3.json("data/result.json").then(function(results) {
                 const filteredResults = results.filter(d => d.tournament === selectedTournament);
 
                 const winningHomeTeams = d3.rollups(
@@ -39,6 +27,10 @@
                     v => d3.sum(v, d => d.home_score > d.away_score),
                     d => d.home_team
                 );
+
+                const width = 500;
+                const height = 200;
+                const margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
                 const svg = d3.select("#visualization").html("");
 
@@ -100,11 +92,11 @@
                     .attr("text-anchor", "middle")
                     .style("font-size", "16px")
                     .text(selectedTournament);
-            }
+            });
+        }
 
-            // Initial visualization
-            updateVisualization();
-        });
+        // Initial visualization
+        updateData("AFC Asian Cup");
     </script>
 </body>
 </html>
