@@ -1,165 +1,110 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Interactive World Map with Match Data and Country Locations</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body {
-      margin: 40px;
-      /* Double the margin */
-      overflow: hidden;
-    }
-
-    #map {
-      border: 1px solid black;
-      /* Add a thin black border */
-      background-color: rgb(91, 134, 198);
-    }
-
-    path {
-      fill: #ccc;
-      stroke: #fff;
-      stroke-width: 0.5;
-    }
-
-    path:hover {
-      fill: #4adc2d;
-    }
-
-    .country-label {
-      font-size: 12px;
-      fill: #333;
-      pointer-events: none;
-    }
-
-    .match-info {
-      font-size: 14px;
-      fill: #333;
-      pointer-events: none;
-    }
-
-    .city {
-      fill: black;
-    }
-
-    .city:hover {
-      stroke: red;
-    }
-
-    .city-info {
-      font-size: 12px;
-      fill: #333;
-      pointer-events: none;
-      display: none;
-    }
-
-    .info-box {
-      position: absolute;
-      margin-bottom: 2px;
-      left: 10px;
-      top: 10px;
-      background-color: rgba(255, 255, 255, 0.8);
-      padding: 5px;
-      border: 1px;
-    }
-
-    body {
-      background-color: black;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Top 10 Home Teams Winning Most Matches</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
+<body>
+    <div id="visualization"></div>
+    <div>
+        <input type="button" value="AFC Asian Cup" onclick="updateData('AFC Asian Cup')">
+        <input type="button" value="African Cup of Nations" onclick="updateData('African Cup of Nations')">
+        <input type="button" value="Confederations Cup" onclick="updateData('Confederations Cup')">
+        <input type="button" value="Copa América" onclick="updateData('Copa América')">
+        <input type="button" value="FIFA World Cup" onclick="updateData('FIFA World Cup')">
+        <input type="button" value="King's Cup" onclick="updateData('King\'s Cup')">
+        <input type="button" value="UEFA Nations League" onclick="updateData('UEFA Nations League')">
+        <input type="button" value="UEFA Euro" onclick="updateData('UEFA Euro')">
+    </div>
+    <script>
+        // Fetch the data from the JSON file
+        d3.json("data/result.json").then(function(results) {
+            const width = 500;
+            const height = 200;
+            const margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
-<body id="back">
-  <svg id="map"></svg>
-  <div class="info-box"></div>
+            let selectedTournament = "AFC Asian Cup"; // Default tournament
 
-  <script>
-    // Data paths
-    var geoJSONPath = "world-countries.geojson";
-    var matchDataPath = "updated_data.json";
+            function updateData(tournament) {
+                selectedTournament = tournament;
+                updateVisualization();
+            }
 
-    var svg = d3.select("#map");
-    var margin = 40; // Doubled the margin
-    var width = window.innerWidth - 2 * margin;
-    var height = window.innerHeight - 2 * margin;
+            function updateVisualization() {
+                const filteredResults = results.filter(d => d.tournament === selectedTournament);
 
-    svg.attr("width", width).attr("height", height);
+                const winningHomeTeams = d3.rollups(
+                    filteredResults,
+                    v => d3.sum(v, d => d.home_score > d.away_score),
+                    d => d.home_team
+                );
 
-    var projection = d3.geoMercator()
-      .scale(width / 2 / Math.PI)
-      .translate([width / 2, height / 2]);
+                const svg = d3.select("#visualization").html("");
 
-    var path = d3.geoPath().projection(projection);
+                const newSvg = svg.append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var mapGroup = svg.append("g").attr("transform", "translate(" + margin + "," + margin + ")");
+                const xScale = d3.scaleBand()
+                    .domain(d3.range(10))
+                    .range([0, width])
+                    .padding(0.1);
 
-    // Load and display the map
-    d3.json(geoJSONPath).then(function (world) {
-      // Create map paths
-      var countries = mapGroup.selectAll(".country")
-        .data(world.features)
-        .enter().append("path")
-        .attr("d", path)
-        .attr("class", "country")
-        .on("mouseover", function (d) {
-          d3.select(this).attr("fill", "#99ccff");
-        })
-        .on("mouseout", function (d) {
-          d3.select(this).attr("fill", "#ccc");
-          mapGroup.selectAll(".match-info").remove();
+                const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(winningHomeTeams, d => d[1])])
+                    .range([height, 0]);
+
+                const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+                newSvg.selectAll(".bar")
+                    .data(winningHomeTeams.slice(0, 10))
+                    .enter().append("rect")
+                    .attr("class", "bar")
+                    .attr("x", (d, i) => xScale(i))
+                    .attr("width", xScale.bandwidth())
+                    .attr("y", height) // Start from the bottom for a smooth transition
+                    .attr("height", 0)  // Start with zero height
+                    .attr("fill", (d, i) => colorScale(i))
+                    .transition() // Add transition
+                    .duration(1000) // Set duration of transition
+                    .attr("y", d => yScale(d[1]))
+                    .attr("height", d => height - yScale(d[1]));
+
+                newSvg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(xScale));
+
+                newSvg.append("g")
+                    .call(d3.axisLeft(yScale));
+
+                newSvg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height + margin.bottom)
+                    .attr("text-anchor", "middle")
+                    .text("Top 10 Teams");
+
+                newSvg.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", -margin.left)
+                    .attr("x", -height / 2)
+                    .attr("dy", "1em")
+                    .attr("text-anchor", "middle")
+                    .text("Matches Won");
+
+                newSvg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", -margin.top / 2)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "16px")
+                    .text(selectedTournament);
+            }
+
+            // Initial visualization
+            updateVisualization();
         });
-
-      // Add country labels with trimmed names
-      mapGroup.selectAll("text")
-        .data(world.features)
-        .enter().append("text")
-        .attr("class", "country-label")
-        .attr("transform", function (d) {
-          var centroid = path.centroid(d);
-          return "translate(" + centroid + ")";
-        })
-        .attr("dy", "0.35em")
-        .text(function (d) {
-          return d.properties.name.substr(0, 2); // Trimmed to two letters
-        });
-    });
-
-    // Load and display match data
-    d3.json(matchDataPath).then(function (matches) {
-      mapGroup.selectAll(".city")
-        .data(matches)
-        .enter()
-        .append("circle")
-        .attr("class", "city")
-        .attr("r", 4)
-        .attr("cx", function (d) {
-          return projection([d.city_longitude, d.city_latitude])[0];
-        })
-        .attr("cy", function (d) {
-          return projection([d.city_longitude, d.city_latitude])[1];
-        })
-        .on("mouseover", function (event, d) {
-          if (event.target.tagName === "circle") {
-            d3.select(this).attr("stroke", "red");
-            var matchInfo =
-              `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
-            var infoBox = d3.select(".info-box");
-            infoBox.html(matchInfo);
-          }
-        })
-        .on("mouseout", function () {
-          d3.select(this).attr("stroke", "none");
-          d3.select(".info-box").html("");
-        });
-    });
-
-    // Enable zoom
-    svg.call(d3.zoom().on("zoom", function () {
-      mapGroup.attr("transform", d3.event.transform);
-    }));
-  </script>
+    </script>
 </body>
-
 </html>

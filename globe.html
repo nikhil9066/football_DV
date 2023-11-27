@@ -61,6 +61,25 @@
             left: 20px;
             top: 20px;
         }
+
+        .next-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: white;
+            color: black;
+            text-decoration: none;
+            font-weight: bold;
+            border: 2px solid black;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .next-button:hover {
+            background-color: #eee;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 
@@ -153,6 +172,9 @@
             mapGroup.attr("transform", d3.event.transform);
         }));
     </script>
+
+    <!-- Add Next button to redirect to stats.html -->
+    <a href="stats.html" class="next-button">Next</a>
 </body>
 
 </html>
