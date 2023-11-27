@@ -1,102 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Top 10 Home Teams Winning Most Matches</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Statistics Page</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      flex-direction: column;
+      align-items: stretch;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    header {
+      background-color: #555;
+      padding: 10px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    select {
+      margin-right: 20px;
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #fff;
+      color: #333;
+      cursor: pointer;
+    }
+
+    main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #left-container {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    #right-container {
+      flex: 1;
+      padding: 20px;
+      background-color: #fff;
+      overflow: auto;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    #visualization {
+      text-align: center;
+    }
+
+    #visualization input {
+      margin: 5px;
+      padding: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #visualization svg {
+      width: 100%;
+      height: auto;
+    }
+  </style>
 </head>
+
 <body>
-    <div>
+  <header>
+    <select id="continentDropdown" onchange="updateContent()">
+      <option value="all">All Continents</option>
+      <option value="africa">Africa</option>
+      <option value="antarctica">Antarctica</option>
+      <option value="asia">Asia</option>
+      <option value="europe">Europe</option>
+      <option value="north-america">North America</option>
+      <option value="oceania">Oceania</option>
+      <option value="south-america">South America</option>
+    </select>
+  </header>
+
+  <main>
+    <div id="left-container">
+      <svg id="map"></svg>
+    </div>
+    <div id="right-container">
+      <div>
         <input type="button" value="AFC Asian Cup" onclick="updateData('AFC Asian Cup')">
         <input type="button" value="African Cup of Nations" onclick="updateData('African Cup of Nations')">
         <input type="button" value="Confederations Cup" onclick="updateData('Confederations Cup')">
         <input type="button" value="Copa América" onclick="updateData('Copa América')">
+      </div>
+      <div>
         <input type="button" value="FIFA World Cup" onclick="updateData('FIFA World Cup')">
         <input type="button" value="King's Cup" onclick="updateData('King\'s Cup')">
         <input type="button" value="UEFA Nations League" onclick="updateData('UEFA Nations League')">
         <input type="button" value="UEFA Euro" onclick="updateData('UEFA Euro')">
+      </div>
+      <div id="visualization"></div>
     </div>
-    <div id="visualization"></div>
-    <script>
-        function updateData(selectedTournament) {
-            d3.json("data/result.json").then(function(results) {
-                const filteredResults = results.filter(d => d.tournament === selectedTournament);
+  </main>
 
-                const winningHomeTeams = d3.rollups(
-                    filteredResults,
-                    v => d3.sum(v, d => d.home_score > d.away_score),
-                    d => d.home_team
-                );
+  <script>
+    function updateContent() {
+      var selectedContinent = document.getElementById("continentDropdown").value;
+      var continentNameElement = document.getElementById("continentName");
+      var continentTextElement = document.getElementById("continentText");
 
-                const width = 500;
-                const height = 200;
-                const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+      continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
+        selectedContinent.slice(1);
+      continentTextElement.textContent = "Continents Continents Continents";
 
-                const svg = d3.select("#visualization").html("");
+      if (selectedContinent !== 'all') {
+        drawGeographicalMap(selectedContinent);
+      }
+    }
 
-                const newSvg = svg.append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    function drawGeographicalMap(continent) {
+      var svg = d3.select("#map");
 
-                const xScale = d3.scaleBand()
-                    .domain(d3.range(10))
-                    .range([0, width])
-                    .padding(0.1);
+      d3.json("data/World_Continents.geojson").then(function (continentsData) {
+        var selectedContinentData = continentsData.features.find(function (feature) {
+          return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
+        });
 
-                const yScale = d3.scaleLinear()
-                    .domain([0, d3.max(winningHomeTeams, d => d[1])])
-                    .range([height, 0]);
+        if (selectedContinentData) {
+          var projection = d3.geoNaturalEarth1()
+            .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
+          var path = d3.geoPath().projection(projection);
 
-                const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+          svg.selectAll("*").remove();
 
-                newSvg.selectAll(".bar")
-                    .data(winningHomeTeams.slice(0, 10))
-                    .enter().append("rect")
-                    .attr("class", "bar")
-                    .attr("x", (d, i) => xScale(i))
-                    .attr("width", xScale.bandwidth())
-                    .attr("y", height) // Start from the bottom for a smooth transition
-                    .attr("height", 0)  // Start with zero height
-                    .attr("fill", (d, i) => colorScale(i))
-                    .transition() // Add transition
-                    .duration(1000) // Set duration of transition
-                    .attr("y", d => yScale(d[1]))
-                    .attr("height", d => height - yScale(d[1]));
-
-                newSvg.append("g")
-                    .attr("transform", "translate(0," + height + ")")
-                    .call(d3.axisBottom(xScale));
-
-                newSvg.append("g")
-                    .call(d3.axisLeft(yScale));
-
-                newSvg.append("text")
-                    .attr("x", width / 2)
-                    .attr("y", height + margin.bottom)
-                    .attr("text-anchor", "middle")
-                    .text("Top 10 Teams");
-
-                newSvg.append("text")
-                    .attr("transform", "rotate(-90)")
-                    .attr("y", -margin.left)
-                    .attr("x", -height / 2)
-                    .attr("dy", "1em")
-                    .attr("text-anchor", "middle")
-                    .text("Matches Won");
-
-                newSvg.append("text")
-                    .attr("x", width / 2)
-                    .attr("y", -margin.top / 2)
-                    .attr("text-anchor", "middle")
-                    .style("font-size", "16px")
-                    .text(selectedTournament);
-            });
+          svg.selectAll("path")
+            .data([selectedContinentData])
+            .enter().append("path")
+            .attr("d", path)
+            .attr("fill", "#4adc2d")
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 1);
         }
+      }).catch(function (error) {
+        console.error("Error loading GeoJSON data:", error);
+      });
+    }
 
-        // Initial visualization
-        updateData("AFC Asian Cup");
-    </script>
+    const width = 500;
+    const height = 200;
+    const margin = {
+      top: 20,
+      right: 20,
+      bottom: 30,
+      left: 40
+    };
+
+    const svg = d3.select("#visualization").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const xScale = d3.scaleBand()
+      .domain(d3.range(10))
+      .range([0, width])
+      .padding(0.1);
+
+    const yScale = d3.scaleLinear()
+      .range([height, 0]);
+
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(xScale));
+
+    svg.append("g")
+      .call(d3.axisLeft(yScale));
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height + margin.bottom)
+      .attr("text-anchor", "middle")
+      .text("Top 10 Teams");
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -margin.left)
+      .attr("x", -height / 2)
+      .attr("dy", "1em")
+      .attr("text-anchor", "middle")
+      .text("Matches Won");
+
+    function updateData(selectedTournament) {
+      d3.json("data/result.json").then(function (results) {
+        const filteredResults = results.filter(d => d.tournament === selectedTournament);
+
+        const winningHomeTeams = d3.rollups(
+          filteredResults,
+          v => d3.sum(v, d => d.home_score > d.away_score),
+          d => d.home_team
+        );
+
+        yScale.domain([0, d3.max(winningHomeTeams, d => d[1])]);
+
+        const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+        const bars = svg.selectAll(".bar")
+          .data(winningHomeTeams.slice(0, 10));
+
+        bars.exit().remove();
+
+        const newBars = bars.enter().append("rect")
+          .attr("class", "bar")
+          .attr("x", (d, i) => xScale(i))
+          .attr("width", xScale.bandwidth())
+          .attr("y", height)
+          .attr("height", 0)
+          .attr("fill", (d, i) => colorScale(i));
+
+        const mergedBars = newBars.merge(bars);
+
+        mergedBars.transition()
+          .duration(1000)
+          .attr("y", d => yScale(d[1]))
+          .attr("height", d => height - yScale(d[1]));
+
+        svg.select(".axisLeft")
+          .call(d3.axisLeft(yScale));
+
+        svg.select(".label")
+          .text(selectedTournament);
+      });
+    }
+
+    updateData("AFC Asian Cup");
+  </script>
 </body>
+
 </html>
