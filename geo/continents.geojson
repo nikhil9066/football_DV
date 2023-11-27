@@ -1,0 +1,118 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": { "name": "Africa" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-20, -35],
+              [52, -35],
+              [52, 37],
+              [-20, 37],
+              [-20, -35]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "name": "Antarctica" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [160, -90],
+              [160, 90],
+              [-160, 90],
+              [-160, -90],
+              [160, -90]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "name": "Asia" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [25, -10],
+              [180, -10],
+              [180, 85],
+              [25, 85],
+              [25, -10]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "name": "Europe" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-25, 35],
+              [40, 35],
+              [40, 75],
+              [-25, 75],
+              [-25, 35]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "name": "North America" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-170, 0],
+              [-30, 0],
+              [-30, 85],
+              [-170, 85],
+              [-170, 0]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "name": "Oceania" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [110, -50],
+              [180, -50],
+              [180, -10],
+              [110, -10],
+              [110, -50]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "name": "South America" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-90, -60],
+              [-30, -60],
+              [-30, 10],
+              [-90, 10],
+              [-90, -60]
+            ]
+          ]
+        }
+      }
+    ]
+  }
+  
