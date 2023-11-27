@@ -97,21 +97,59 @@
 
 # print(f"Combined data saved in '{combined_output_file}'.")
 
+# import json
+
+# # updated_file_names = ["combined_data.json","combined_data_1.json"]
+
+# # Specify the JSON file you want to find the length of
+# json_file_path = "combined_data_final.json"
+
+# # Read the JSON file
+# with open(json_file_path, "r") as json_file:
+#     json_data = json.load(json_file)
+
+# # Check if the content is a list (array)
+# if isinstance(json_data, list):
+#     # Print the length of the list
+#     print(f"Length of the JSON file '{json_file_path}': {len(json_data)}")
+# else:
+#     print(f"The content of '{json_file_path}' is not a list (array).")
+
 import json
 
-# updated_file_names = ["combined_data.json","combined_data_1.json"]
+# Read the country-to-continent mapping from file
+with open('geo/country-by-continent.json', 'r') as f:
+    country_mapping = json.load(f)
 
-# Specify the JSON file you want to find the length of
-json_file_path = "combined_data_final.json"
+# Read the original match data from a file
+with open('data/result.json', 'r') as f:
+    original_data = json.load(f)
 
-# Read the JSON file
-with open(json_file_path, "r") as json_file:
-    json_data = json.load(json_file)
+# Create a dictionary from the mapping for faster lookup
+country_to_continent = {entry['country']: entry['continent'] for entry in country_mapping}
 
-# Check if the content is a list (array)
-if isinstance(json_data, list):
-    # Print the length of the list
-    print(f"Length of the JSON file '{json_file_path}': {len(json_data)}")
-else:
-    print(f"The content of '{json_file_path}' is not a list (array).")
+# Continent for countries not in the mapping
+default_continent = 'Other'
 
+# Organize matches by continent
+matches_by_continent = {}
+
+for match in original_data:
+    home_country = match["home_team"]
+    away_country = match["away_team"]
+
+    home_continent = country_to_continent.get(home_country, default_continent)
+    away_continent = country_to_continent.get(away_country, default_continent)
+
+    # Add the match to the respective continent
+    matches_by_continent.setdefault(home_continent, []).append(match)
+    matches_by_continent.setdefault(away_continent, []).append(match)
+
+# Convert the matches_by_continent dictionary to JSON
+result_json = json.dumps(matches_by_continent, indent=2)
+
+# Save the result to a new file named map.json
+with open('map.json', 'w') as f:
+    f.write(result_json)
+
+print("Result saved to map.json")
