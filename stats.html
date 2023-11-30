@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistics Page</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -54,6 +55,12 @@
             padding: 20px;
             background-color: #fff;
             overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Center the content horizontally */
+            justify-content: center;
+            /* Center the content vertically */
         }
 
         #map {
@@ -76,6 +83,15 @@
             width: 100%;
             height: auto;
         }
+
+        /* Add your existing styles here */
+        .barHome {
+            fill: steelblue;
+        }
+
+        .barAway {
+            fill: orange;
+        }
     </style>
 </head>
 
@@ -84,12 +100,11 @@
         <select id="continentDropdown" onchange="updateContent()">
             <option value="all">All Continents</option>
             <option value="africa">Africa</option>
-            <option value="antarctica">Antarctica</option>
             <option value="asia">Asia</option>
             <option value="europe">Europe</option>
-            <option value="north-america">North America</option>
+            <option value="north america">North America</option>
             <option value="oceania">Oceania</option>
-            <option value="south-america">South America</option>
+            <option value="south america">South America</option>
         </select>
     </header>
 
@@ -100,25 +115,18 @@
         <div id="right-container">
             <h2 id="continentName">Continent: Asia</h2>
             <p id="continentText">Continents Continents Continents</p>
-            <div>
-                <input type="button" value="AFC Asian Cup" onclick="updateData('AFC Asian Cup')">
-                <input type="button" value="African Cup of Nations" onclick="updateData('African Cup of Nations')">
-                <input type="button" value="Confederations Cup" onclick="updateData('Confederations Cup')">
-                <input type="button" value="Copa América" onclick="updateData('Copa América')">
+            <div id="graphs">
+                <svg id="homeScoreGraph" width="900" height="400"></svg>
+                <svg id="awayScoreGraph" width="800" height="300"></svg>
             </div>
-            <div>
-                <input type="button" value="FIFA World Cup" onclick="updateData('FIFA World Cup')">
-                <input type="button" value="King's Cup" onclick="updateData('King\'s Cup')">
-                <input type="button" value="UEFA Nations League" onclick="updateData('UEFA Nations League')">
-                <input type="button" value="UEFA Euro" onclick="updateData('UEFA Euro')">
-            </div>
-            <div id="visualization"></div>
         </div>
     </main>
 
     <script>
-        function updateContent() {
-            var selectedContinent = document.getElementById("continentDropdown").value;
+        // Update the updateContent function
+        async function updateContent() {
+            var selectedContinent = document.getElementById("continentDropdown").value.toLowerCase();
+
             var continentNameElement = document.getElementById("continentName");
             var continentTextElement = document.getElementById("continentText");
 
@@ -128,16 +136,21 @@
 
             if (selectedContinent !== 'all') {
                 drawGeographicalMap(selectedContinent);
+                await updateGraph(selectedContinent); // Wait for updateGraph to complete
             }
         }
 
         function drawGeographicalMap(continent) {
             var svg = d3.select("#map");
 
-            d3.json("geo//World_Continents.geojson").then(function (continentsData) {
+            d3.json("geo/World_Continents.geojson").then(function (continentsData) {
+                console.log("Loaded GeoJSON data:", continentsData);
+
                 var selectedContinentData = continentsData.features.find(function (feature) {
                     return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
                 });
+
+                console.log("Selected Continent Data:", selectedContinentData);
 
                 if (selectedContinentData) {
                     var projection = d3.geoNaturalEarth1()
@@ -159,93 +172,246 @@
             });
         }
 
-        const width = 500;
-        const height = 200;
-        const margin = {
-            top: 20,
-            right: 20,
-            bottom: 30,
-            left: 40
-        };
+        // Initial continent
+        var currentContinent;
+        var borderGap = 20; // Adjusted for better separation
+        var graphGap = 50; // Added gap between the graphs
 
-        const svg = d3.select("#visualization").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        const xScale = d3.scaleBand()
-            .domain(d3.range(10))
-            .range([0, width])
-            .padding(0.1);
-
-        const yScale = d3.scaleLinear()
-            .range([height, 0]);
-
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(xScale));
-
-        svg.append("g")
-            .call(d3.axisLeft(yScale));
-
-        svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", height + margin.bottom)
-            .attr("text-anchor", "middle")
-            .text("Top 10 Teams");
-
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", -margin.left)
-            .attr("x", -height / 2)
-            .attr("dy", "1em")
-            .attr("text-anchor", "middle")
-            .text("Matches Won");
-
-        function updateData(selectedTournament) {
-            d3.json("data/result.json").then(function (results) {
-                const filteredResults = results.filter(d => d.tournament === selectedTournament);
-
-                const winningHomeTeams = d3.rollups(
-                    filteredResults,
-                    v => d3.sum(v, d => d.home_score > d.away_score),
-                    d => d.home_team
-                );
-
-                yScale.domain([0, d3.max(winningHomeTeams, d => d[1])]);
-
-                const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
-
-                const bars = svg.selectAll(".bar")
-                    .data(winningHomeTeams.slice(0, 10));
-
-                bars.exit().remove();
-
-                const newBars = bars.enter().append("rect")
-                    .attr("class", "bar")
-                    .attr("x", (d, i) => xScale(i))
-                    .attr("width", xScale.bandwidth())
-                    .attr("y", height)
-                    .attr("height", 0)
-                    .attr("fill", (d, i) => colorScale(i));
-
-                const mergedBars = newBars.merge(bars);
-
-                mergedBars.transition()
-                    .duration(1000)
-                    .attr("y", d => yScale(d[1]))
-                    .attr("height", d => height - yScale(d[1]));
-
-                svg.select(".axisLeft")
-                    .call(d3.axisLeft(yScale));
-
-                svg.select(".label")
-                    .text(selectedTournament);
-            });
+        // Function to dynamically load data from the map.json file
+        async function fetchData() {
+            try {
+                const response = await fetch('map.json');
+                const data = await response.json();
+                console.log(data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return null;
+            }
         }
 
-        updateData("AFC Asian Cup");
+        async function updateGraph(continent) {
+            // Update the current continent
+            currentContinent = continent.charAt(0).toUpperCase() + continent.slice(1);
+
+            console.log('Selected continent:', currentContinent);
+
+            // D3.js code for plotting the score distribution
+            const data = await fetchData();
+
+            if (!data) {
+                console.error('Invalid or missing data overall');
+                return;
+            }
+
+            console.log('All data:', data);
+
+            if (!data.hasOwnProperty(currentContinent)) {
+                console.error('Invalid or missing data for the selected continent:', currentContinent);
+                console.log('Available continents:', Object.keys(data));
+                return;
+            }
+
+            const selectedContinentData = data[currentContinent];
+            console.log('Selected continent data:', selectedContinentData);
+
+            var svgHome = d3.select("#graphs").html("").append("svg")
+                .attr("width", 800)
+                .attr("height", 300); // Adjusted height for individual graph
+
+            var svgAway = d3.select("#graphs").append("svg")
+                .attr("width", 800)
+                .attr("height", 300); // Adjusted height for individual graph
+
+            var margin = {
+                top: 50,
+                right: 50,
+                bottom: 50,
+                left: 50
+            };
+            var width = 400 - margin.left - margin.right; // Adjusted width for individual graph
+            var height = 300 - margin.top - margin.bottom; // Adjusted height for individual graph
+
+            // Create a group for home scores
+            var homeScoreGroup = svgHome.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // Create a group for away scores
+            var awayScoreGroup = svgAway.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // Fetch home and away scores data for the selected continent
+            var homeScores = data[currentContinent].map(function (d) {
+                return d.home_score;
+            });
+            var awayScores = data[currentContinent].map(function (d) {
+                return d.away_score;
+            });
+
+            // Create histogram scales for home scores
+            var xHome = d3.scaleLinear()
+                .domain([d3.min(homeScores), d3.max(homeScores)])
+                .range([0, width]);
+
+            var yHome = d3.scaleLinear()
+                .range([height, 0]);
+
+            // Create histogram scales for away scores
+            var xAway = d3.scaleLinear()
+                .domain([d3.min(awayScores), d3.max(awayScores)])
+                .range([0, width]);
+
+            var yAway = d3.scaleLinear()
+                .range([height, 0]);
+
+            // Generate histograms for home scores
+            var histogramHome = d3.histogram()
+                .domain(xHome.domain())
+                .thresholds(xHome.ticks(20));
+
+            var binsHome = histogramHome(homeScores);
+
+            yHome.domain([0, d3.max(binsHome, function (d) {
+                return d.length;
+            })]);
+
+            // Create bars for home scores
+            homeScoreGroup.selectAll(".barHome")
+                .data(binsHome)
+                .enter().append("rect")
+                .attr("class", "barHome")
+                .attr("x", function (d) {
+                    return xHome(d.x0);
+                })
+                .attr("y", function (d) {
+                    return yHome(d.length);
+                })
+                .attr("width", function (d) {
+                    return Math.max(0, xHome(d.x1) - xHome(d.x0) - 1);
+                })
+                .attr("height", function (d) {
+                    return height - yHome(d.length);
+                });
+
+            // Generate histograms for away scores
+            var histogramAway = d3.histogram()
+                .domain(xAway.domain())
+                .thresholds(xAway.ticks(20));
+
+            var binsAway = histogramAway(awayScores);
+
+            yAway.domain([0, d3.max(binsAway, function (d) {
+                return d.length;
+            })]);
+
+            // Create bars for away scores
+            awayScoreGroup.selectAll(".barAway")
+                .data(binsAway)
+                .enter().append("rect")
+                .attr("class", "barAway")
+                .attr("x", function (d) {
+                    return xAway(d.x0);
+                })
+                .attr("y", function (d) {
+                    return yAway(d.length);
+                })
+                .attr("width", function (d) {
+                    return Math.max(0, xAway(d.x1) - xAway(d.x0) - 1);
+                })
+                .attr("height", function (d) {
+                    return height - yAway(d.length);
+                });
+
+            // Add axis labels and titles for home scores
+            homeScoreGroup.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xHome));
+
+            homeScoreGroup.append("g")
+                .call(d3.axisLeft(yHome).ticks(10));
+
+            homeScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text("Home Score");
+
+            // Add axis labels and titles for away scores
+            awayScoreGroup.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xAway));
+
+            awayScoreGroup.append("g")
+                .call(d3.axisLeft(yAway).ticks(10));
+
+            awayScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text("Away Score");
+
+            // Add a border and heading for Distribution of Home Scores
+            homeScoreGroup.append("rect")
+                .attr("x", -borderGap)
+                .attr("y", -borderGap)
+                .attr("width", width + 2 * borderGap)
+                .attr("height", height + 2 * borderGap)
+                .style("stroke", "black")
+                .style("fill", "none");
+
+            // Add a border and heading for Distribution of Away Scores
+            awayScoreGroup.append("rect")
+                .attr("x", -borderGap)
+                .attr("y", -borderGap)
+                .attr("width", width + 2 * borderGap)
+                .attr("height", height + 2 * borderGap)
+                .style("stroke", "black")
+                .style("fill", "none");
+
+            // Add heading for Distribution of Home Scores
+            homeScoreGroup.append("text")
+                .attr("x", width / 2)
+                .attr("y", -borderGap / 10)
+                .style("text-anchor", "middle")
+                .style("font-weight", "bold")
+                .text("Distribution of Home Scores");
+
+            // Add heading for Distribution of Away Scores
+            awayScoreGroup.append("text")
+                .attr("x", width / 2)
+                .attr("y", -borderGap / 10)
+                .style("text-anchor", "middle")
+                .style("font-weight", "bold")
+                .text("Distribution of Away Scores");
+
+            // Add x-axis label for home scores
+            homeScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
+                .style("text-anchor", "middle")
+                .text("Home Score");
+
+            // Add y-axis label for home scores
+            homeScoreGroup.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left)
+                .attr("x", -(height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Frequency");
+
+            // Add x-axis label for away scores
+            awayScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
+                .style("text-anchor", "middle")
+                .text("Away Score");
+
+            // Add y-axis label for away scores
+            awayScoreGroup.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left)
+                .attr("x", -(height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Frequency"); 
+        }
     </script>
 </body>
 

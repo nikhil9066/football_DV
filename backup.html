@@ -65,9 +65,13 @@
         return;
       }
 
-      var svg = d3.select("#graphs").html("").append("svg")
+      var svgHome = d3.select("#graphs").html("").append("svg")
         .attr("width", 800)
-        .attr("height", 500); // Increased height for more space
+        .attr("height", 300); // Adjusted height for individual graph
+
+      var svgAway = d3.select("#graphs").append("svg")
+        .attr("width", 800)
+        .attr("height", 300); // Adjusted height for individual graph
 
       var margin = {
         top: 50,
@@ -75,18 +79,21 @@
         bottom: 50,
         left: 50
       };
-      var width = 800 - margin.left - margin.right;
-      var height = 500 - margin.top - margin.bottom; // Updated height
+      var width = 400 - margin.left - margin.right; // Adjusted width for individual graph
+      var height = 300 - margin.top - margin.bottom; // Adjusted height for individual graph
 
-      // Create a single group for both home scores and away scores
-      var scoreGroup = svg.append("g")
+      // Create a group for home scores
+      var homeScoreGroup = svgHome.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Create a group for away scores
+      var awayScoreGroup = svgAway.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // Fetch home and away scores data for the selected continent
       var homeScores = data[currentContinent].map(function (d) {
         return d.home_score;
       });
-      
       var awayScores = data[currentContinent].map(function (d) {
         return d.away_score;
       });
@@ -94,7 +101,7 @@
       // Create histogram scales for home scores
       var xHome = d3.scaleLinear()
         .domain([d3.min(homeScores), d3.max(homeScores)])
-        .range([0, width / 2]);
+        .range([0, width]);
 
       var yHome = d3.scaleLinear()
         .range([height, 0]);
@@ -102,7 +109,7 @@
       // Create histogram scales for away scores
       var xAway = d3.scaleLinear()
         .domain([d3.min(awayScores), d3.max(awayScores)])
-        .range([0, width / 2]);
+        .range([0, width]);
 
       var yAway = d3.scaleLinear()
         .range([height, 0]);
@@ -119,7 +126,7 @@
       })]);
 
       // Create bars for home scores
-      scoreGroup.selectAll(".barHome")
+      homeScoreGroup.selectAll(".barHome")
         .data(binsHome)
         .enter().append("rect")
         .attr("class", "barHome")
@@ -148,12 +155,12 @@
       })]);
 
       // Create bars for away scores
-      scoreGroup.selectAll(".barAway")
+      awayScoreGroup.selectAll(".barAway")
         .data(binsAway)
         .enter().append("rect")
         .attr("class", "barAway")
         .attr("x", function (d) {
-          return width / 2 + xAway(d.x0);
+          return xAway(d.x0);
         })
         .attr("y", function (d) {
           return yAway(d.length);
@@ -166,89 +173,90 @@
         });
 
       // Add axis labels and titles for home scores
-      scoreGroup.append("g")
+      homeScoreGroup.append("g")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(xHome));
 
-      scoreGroup.append("g")
+      homeScoreGroup.append("g")
         .call(d3.axisLeft(yHome).ticks(10));
 
-      scoreGroup.append("text")
-        .attr("transform", "translate(" + (width / 4) + "," + (height + margin.top + 20) + ")")
+      homeScoreGroup.append("text")
+        .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 20) + ")")
         .style("text-anchor", "middle")
         .text("Home Score");
 
       // Add axis labels and titles for away scores
-      scoreGroup.append("g")
-        .attr("transform", "translate(" + (width / 2) + "," + height + ")")
+      awayScoreGroup.append("g")
+        .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(xAway));
 
-      scoreGroup.append("g")
+      awayScoreGroup.append("g")
         .call(d3.axisLeft(yAway).ticks(10));
 
-      scoreGroup.append("text")
-        .attr("transform", "translate(" + (3 * width / 4) + "," + (height + margin.top + 20) + ")")
+      awayScoreGroup.append("text")
+        .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 20) + ")")
         .style("text-anchor", "middle")
         .text("Away Score");
 
       // Add a border and heading for Distribution of Home Scores
-      scoreGroup.append("rect")
+      homeScoreGroup.append("rect")
         .attr("x", -borderGap)
         .attr("y", -borderGap)
-        .attr("width", width / 2 + 2 * borderGap)
+        .attr("width", width + 2 * borderGap)
         .attr("height", height + 2 * borderGap)
         .style("stroke", "black")
         .style("fill", "none");
 
       // Add a border and heading for Distribution of Away Scores
-      scoreGroup.append("rect")
-        .attr("x", width / 2 - borderGap)
+      awayScoreGroup.append("rect")
+        .attr("x", -borderGap)
         .attr("y", -borderGap)
-        .attr("width", width / 2 + 2 * borderGap)
+        .attr("width", width + 2 * borderGap)
         .attr("height", height + 2 * borderGap)
         .style("stroke", "black")
         .style("fill", "none");
 
       // Add heading for Distribution of Home Scores
-      scoreGroup.append("text")
-        .attr("x", width / 4)
+      homeScoreGroup.append("text")
+        .attr("x", width / 2)
         .attr("y", -borderGap / 2)
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
         .text("Distribution of Home Scores");
 
       // Add heading for Distribution of Away Scores
-      scoreGroup.append("text")
-        .attr("x", 3 * width / 4)
+      awayScoreGroup.append("text")
+        .attr("x", width / 2)
         .attr("y", -borderGap / 2)
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
         .text("Distribution of Away Scores");
 
       // Add x-axis label for home scores
-      scoreGroup.append("text")
-        .attr("transform", "translate(" + (width / 4) + "," + (height + margin.top + 50) + ")")
+      homeScoreGroup.append("text")
+        .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
         .style("text-anchor", "middle")
         .text("Home Score");
 
       // Add y-axis label for home scores
-      scoreGroup.append("text")
+      homeScoreGroup.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", -margin.left)
-        .attr("x", -(height / 4))
+        .attr("x", -(height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Frequency");
 
       // Add x-axis label for away scores
-      scoreGroup.append("text")
-        .attr("transform", "translate(" + (3 * width / 4) + "," + (height + margin.top + 50) + ")")
+      awayScoreGroup.append("text")
+        .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
         .style("text-anchor", "middle")
         .text("Away Score");
 
       // Add y-axis label for away scores
-      scoreGroup.append("text")
-        .attr("transform", "translate(" + (width) + "," + height / 4 + ") rotate(90)")
+      awayScoreGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("transform", "translate(" + (width / 2) + "," + -margin.left + ") ")
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Frequency");

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Statistics Page</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+            align-items: stretch;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        header {
+            background-color: #555;
+            padding: 10px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        select {
+            margin-right: 20px;
+            padding: 8px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            cursor: pointer;
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #left-container {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        #right-container {
+            flex: 1;
+            padding: 20px;
+            background-color: #fff;
+            overflow: auto;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        #visualization {
+            text-align: center;
+        }
+
+        #visualization input {
+            margin: 5px;
+            padding: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #visualization svg {
+            width: 100%;
+            height: auto;
+        }
+
+        /* Add your existing styles here */
+        .barHome {
+            fill: steelblue;
+        }
+
+        .barAway {
+            fill: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <select id="continentDropdown" onchange="updateContent()">
+            <option value="all">All Continents</option>
+            <option value="africa">Africa</option>
+            <option value="antarctica">Antarctica</option>
+            <option value="asia">Asia</option>
+            <option value="europe">Europe</option>
+            <option value="north-america">North America</option>
+            <option value="oceania">Oceania</option>
+            <option value="south-america">South America</option>
+        </select>
+    </header>
+
+    <main>
+        <div id="left-container">
+            <!-- Dynamic graph will be rendered here -->
+            <svg id="map"></svg>
+        </div>
+        <div id="right-container">
+            <h2 id="continentName">Continent: Asia</h2>
+            <p id="continentText">Continents Continents Continents</p>
+            <div id="graphs">
+                <!-- SVGs will be appended here -->
+                <!-- The following SVGs will be created dynamically using D3.js -->
+                <svg id="homeScoreGraph" width="800" height="300"></svg>
+                <svg id="awayScoreGraph" width="800" height="300"></svg>
+            </div>
+
+            <div id="updateButtons">
+                <!-- Buttons for updating data -->
+                <!-- The following buttons will be created dynamically using D3.js -->
+                <!-- You can customize these buttons based on your requirements -->
+                <button onclick="updateGraph('Africa')">Africa</button>
+                <button onclick="updateGraph('Antarctica')">Antarctica</button>
+                <button onclick="updateGraph('Asia')">Asia</button>
+                <button onclick="updateGraph('Europe')">Europe</button>
+                <button onclick="updateGraph('North America')">North America</button>
+                <button onclick="updateGraph('Oceania')">Oceania</button>
+                <button onclick="updateGraph('South America')">South America</button>
+            </div>
+
+            <div id="visualization">
+                <!-- Content for visualization -->
+                <!-- You can add content dynamically using D3.js or other methods -->
+                <p>This is a placeholder for visualization content.</p>
+            </div>
+
+    </main>
+
+    <script>
+        // Initial continent
+        var currentContinent;
+        var borderGap = 20; // Adjusted for better separation
+        var graphGap = 50; // Added gap between the graphs
+
+        // Function to dynamically load data from the map.json file
+        async function fetchData() {
+            try {
+                const response = await fetch('map.json');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return null;
+            }
+        }
+
+        // Function to update the graphs based on the selected continent
+        async function updateGraph(continent) {
+            // Update the current continent
+            currentContinent = continent;
+
+            // D3.js code for plotting the score distribution
+            const data = await fetchData();
+            if (!data) {
+                console.error('Invalid or missing data overall');
+                return;
+            }
+
+            if (!data[currentContinent]) {
+                console.error('Invalid or missing data for the selected continent:', currentContinent);
+                return;
+            }
+
+            var svgHome = d3.select("#graphs").html("").append("svg")
+                .attr("width", 800)
+                .attr("height", 300); // Adjusted height for individual graph
+
+            var svgAway = d3.select("#graphs").append("svg")
+                .attr("width", 800)
+                .attr("height", 300); // Adjusted height for individual graph
+
+            var margin = {
+                top: 50,
+                right: 50,
+                bottom: 50,
+                left: 50
+            };
+            var width = 400 - margin.left - margin.right; // Adjusted width for individual graph
+            var height = 300 - margin.top - margin.bottom; // Adjusted height for individual graph
+
+            // Create a group for home scores
+            var homeScoreGroup = svgHome.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // Create a group for away scores
+            var awayScoreGroup = svgAway.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // Fetch home and away scores data for the selected continent
+            var homeScores = data[currentContinent].map(function (d) {
+                return d.home_score;
+            });
+            var awayScores = data[currentContinent].map(function (d) {
+                return d.away_score;
+            });
+
+            // Create histogram scales for home scores
+            var xHome = d3.scaleLinear()
+                .domain([d3.min(homeScores), d3.max(homeScores)])
+                .range([0, width]);
+
+            var yHome = d3.scaleLinear()
+                .range([height, 0]);
+
+            // Create histogram scales for away scores
+            var xAway = d3.scaleLinear()
+                .domain([d3.min(awayScores), d3.max(awayScores)])
+                .range([0, width]);
+
+            var yAway = d3.scaleLinear()
+                .range([height, 0]);
+
+            // Generate histograms for home scores
+            var histogramHome = d3.histogram()
+                .domain(xHome.domain())
+                .thresholds(xHome.ticks(20));
+
+            var binsHome = histogramHome(homeScores);
+
+            yHome.domain([0, d3.max(binsHome, function (d) {
+                return d.length;
+            })]);
+
+            // Create bars for home scores
+            homeScoreGroup.selectAll(".barHome")
+                .data(binsHome)
+                .enter().append("rect")
+                .attr("class", "barHome")
+                .attr("x", function (d) {
+                    return xHome(d.x0);
+                })
+                .attr("y", function (d) {
+                    return yHome(d.length);
+                })
+                .attr("width", function (d) {
+                    return Math.max(0, xHome(d.x1) - xHome(d.x0) - 1);
+                })
+                .attr("height", function (d) {
+                    return height - yHome(d.length);
+                });
+
+            // Generate histograms for away scores
+            var histogramAway = d3.histogram()
+                .domain(xAway.domain())
+                .thresholds(xAway.ticks(20));
+
+            var binsAway = histogramAway(awayScores);
+
+            yAway.domain([0, d3.max(binsAway, function (d) {
+                return d.length;
+            })]);
+
+            // Create bars for away scores
+            awayScoreGroup.selectAll(".barAway")
+                .data(binsAway)
+                .enter().append("rect")
+                .attr("class", "barAway")
+                .attr("x", function (d) {
+                    return xAway(d.x0);
+                })
+                .attr("y", function (d) {
+                    return yAway(d.length);
+                })
+                .attr("width", function (d) {
+                    return Math.max(0, xAway(d.x1) - xAway(d.x0) - 1);
+                })
+                .attr("height", function (d) {
+                    return height - yAway(d.length);
+                });
+
+            // Add axis labels and titles for home scores
+            homeScoreGroup.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xHome));
+
+            homeScoreGroup.append("g")
+                .call(d3.axisLeft(yHome).ticks(10));
+
+            homeScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text("Home Score");
+
+            // Add axis labels and titles for away scores
+            awayScoreGroup.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xAway));
+
+            awayScoreGroup.append("g")
+                .call(d3.axisLeft(yAway).ticks(10));
+
+            awayScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text("Away Score");
+
+            // Add a border and heading for Distribution of Home Scores
+            homeScoreGroup.append("rect")
+                .attr("x", -borderGap)
+                .attr("y", -borderGap)
+                .attr("width", width + 2 * borderGap)
+                .attr("height", height + 2 * borderGap)
+                .style("stroke", "black")
+                .style("fill", "none");
+
+            // Add a border and heading for Distribution of Away Scores
+            awayScoreGroup.append("rect")
+                .attr("x", -borderGap)
+                .attr("y", -borderGap)
+                .attr("width", width + 2 * borderGap)
+                .attr("height", height + 2 * borderGap)
+                .style("stroke", "black")
+                .style("fill", "none");
+
+            // Add heading for Distribution of Home Scores
+            homeScoreGroup.append("text")
+                .attr("x", width / 2)
+                .attr("y", -borderGap / 2)
+                .style("text-anchor", "middle")
+                .style("font-weight", "bold")
+                .text("Distribution of Home Scores");
+
+            // Add heading for Distribution of Away Scores
+            awayScoreGroup.append("text")
+                .attr("x", width / 2)
+                .attr("y", -borderGap / 2)
+                .style("text-anchor", "middle")
+                .style("font-weight", "bold")
+                .text("Distribution of Away Scores");
+
+            // Add x-axis label for home scores
+            homeScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
+                .style("text-anchor", "middle")
+                .text("Home Score");
+
+            // Add y-axis label for home scores
+            homeScoreGroup.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left)
+                .attr("x", -(height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Frequency");
+
+            // Add x-axis label for away scores
+            awayScoreGroup.append("text")
+                .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
+                .style("text-anchor", "middle")
+                .text("Away Score");
+
+            // Add y-axis label for away scores
+            awayScoreGroup.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("transform", "translate(" + (width / 2) + "," + -margin.left + ") ")
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Frequency");
+        }
+
+        // Create buttons for each continent
+        var continents = ["Africa", "Antarctica", "Asia", "Europe", "North America", "Oceania", "South America"];
+
+        var buttons = d3.select('#buttons')
+            .selectAll('button')
+            .data(continents)
+            .enter()
+            .append('button')
+            .text(function (d) {
+                return d;
+            })
+            .on('click', function (event) {
+                updateGraph(event.target.textContent);
+            });
+
+        // Initial graph render (default to the first continent)
+        updateGraph(continents[0]);
+    </script>
+</body>
+
+</html>
