@@ -1,199 +1,274 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Two-Column Layout</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two-Column Layout</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+    }
 
-        .container {
-            display: flex;
-            height: 100vh; /* 100% of the viewport height */
-        }
+    .container {
+      display: flex;
+      height: 100vh;
+      /* 100% of the viewport height */
+    }
 
-        .left-container,
-        .right-container {
-            flex: 1; /* Equal flex distribution for both containers */
-            border: 1px solid #ccc;
-        }
+    .left-container,
+    .right-container {
+      flex: 1;
+      /* Equal flex distribution for both containers */
+      border: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      /* Adjusted for better visualization */
+    }
 
-        .top-section,
-        .bottom-section {
-            height: 50%; /* Each section takes 50% of the container height */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid #ddd;
-        }
+    .top-section,
+    .bottom-section {
+      height: 50%;
+      /* Each section takes 50% of the container height */
+      display: flex;
+      flex-direction: column;
+      /* Adjusted for better visualization */
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #ddd;
+    }
 
-        /* Screen 1 */
-        .left-container .top-section {
-            background-color: #e6f7ff; /* Light blue background for Screen 1 */
-            position: relative; /* Position relative for absolute positioning of D3 SVG */
-            text-align: center; /* Center the text */
-        }
+    .left-container .top-section,
+    .left-container .bottom-section {
+      border-bottom: none;
+      /* Remove border at the bottom of Screen 2 */
+    }
 
-        .left-container .top-section h1 {
-            font-size: 2em; /* Adjust the font size as needed */
-            font-weight: bold; /* Make the text bold */
-            margin: 0; /* Remove default margin */
-        }
+    .bottom-section {
+      border-top: none;
+      /* Remove border at the top of Screen 5 */
+    }
 
-        /* Screen 2 */
-        .left-container .bottom-section {
-            background-color: #ccf2ff; /* Lighter blue background for Screen 2 */
-        }
+    .right-container .bottom-section {
+      border-bottom: none;
+      /* Remove border at the bottom of Screen 4 */
+    }
 
-        /* Screen 3 */
-        .right-container .top-section {
-            background-color: #ffe6e6; /* Light red background for Screen 3 */
-        }
+    .top-section h1 {
+      writing-mode: vertical-rl;
+      /* Vertical writing mode */
+      transform: rotate(180deg);
+      /* Rotate text */
+    }
 
-        /* Screen 4 */
-        .right-container .bottom-section {
-            background-color: #ffcccc; /* Lighter red background for Screen 4 */
-        }
+    .top-section h1:after {
+      content: '\00a0';
+      /* Add non-breaking space to maintain height */
+    }
 
-        /* Style adjustments for better visualization */
-        .left-container, .right-container {
-            display: flex;
-            flex-direction: column;
-        }
+    /* Adjustments for better visualization */
+    .left-container .bottom-section {
+      border-bottom: none;
+      /* Remove border at the bottom of Screen 2 */
+    }
 
-        /* Additional styles for Screen 5-8 */
-        .left-container .bottom-section {
-            border-bottom: none; /* Remove border at the bottom of Screen 2 */
-        }
+    /* Screen 1 */
+    .left-container .top-section {
+      background-color: #e6f7ff;
+      /* Light blue background for Screen 1 */
+      position: relative;
+      /* Position relative for absolute positioning of D3 SVG */
+      text-align: center;
+      /* Center the text */
+    }
 
-        .bottom-section {
-            border-top: none; /* Remove border at the top of Screen 5 */
-        }
+    .left-container .top-section h1 {
+      font-size: 2em;
+      /* Adjust the font size as needed */
+      font-weight: bold;
+      /* Make the text bold */
+      margin: 0;
+      /* Remove default margin */
+    }
 
-        /* Screen 5 and 7 */
-        .left-container .bottom-section,
-        .right-container .bottom-section {
-            background-color: #ccffcc; /* Light green background for Screen 5 and 7 */
-        }
+    .left-container .top-section .semi-heading {
+      font-size: 1.5em;
+      /* Semi-heading font size */
+      font-weight: bold;
+      /* Make the text bold */
+      margin-top: 10px;
+      /* Margin between heading and graph */
+    }
 
-        /* Screen 3 and 7 */
-        .right-container .top-section,
-        .right-container .bottom-section {
-            border-left: none; /* Remove border at the left of Screen 3 and 7 */
-        }
+    .left-container .top-section .d3-container {
+      width: 100%;
+      height: 100%;
+      flex: 1;
+      /* Occupy remaining space in the top section */
+    }
 
-        /* Remove border at the bottom of Screen 4 and 8 */
-        .right-container .bottom-section {
-            border-bottom: none; 
-        }
-    </style>
+    .left-container .bottom-section {
+      background-color: #ccf2ff;
+      /* Lighter blue background for Screen 2 */
+    }
+
+    /* Screen 3 */
+    .right-container .top-section {
+      background-color: #ffe6e6;
+      /* Light red background for Screen 3 */
+      position: relative;
+      /* Position relative for absolute positioning of D3 SVG */
+      text-align: center;
+      /* Center the text */
+    }
+
+    .right-container .top-section h1 {
+      font-size: 2em;
+      /* Adjust the font size as needed */
+      font-weight: bold;
+      /* Make the text bold */
+      margin: 0;
+      /* Remove default margin */
+    }
+
+    .right-container .bottom-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #ddd;
+      background-color: #ffcccc;
+      /* Lighter red background for Screen 4 */
+    }
+
+    /* Style adjustments for better visualization */
+    .right-container .top-section,
+    .right-container .bottom-section {
+      border-left: none;
+      /* Remove border at the left of Screen 3 and 7 */
+    }
+
+    /* Remove border at the bottom of Screen 4 */
+    .right-container .bottom-section {
+      border-bottom: none;
+    }
+
+    /* Integrate D3 Code */
+    .d3-container {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="left-container">
-            <div class="top-section" id="d3-container">
-                <h1>Screen 1</h1>
-            </div>
-            <div class="bottom-section">Screen 2</div>
-        </div>
-        <div class="right-container">
-            <div class="top-section">Screen 3</div>
-            <div class="bottom-section">Screen 4</div>
-        </div>
+  <div class="container">
+    <div class="left-container">
+      <div class="top-section">
+        <div class="semi-heading">Time Series Analysis</div>
+        <!-- Container for D3 chart -->
+        <div class="d3-container" id="d3-container"></div>
+      </div>
+      <div class="bottom-section">
+        <!-- Content for Screen 2 -->
+        Screen 2
+      </div>
     </div>
-    <div class="container">
-        <div class="left-container">
-            <div class="top-section">Screen 5</div>
-            <div class="bottom-section">Screen 6</div>
-        </div>
-        <div class="right-container">
-            <div class="top-section">Screen 7</div>
-            <div class="bottom-section">Screen 8</div>
-        </div>
+    <div class="right-container">
+      <div class="top-section">
+        <h1>Screen 3</h1>
+      </div>
+      <div class="bottom-section">
+        <!-- Content for Screen 4 -->
+        Screen 4
+      </div>
     </div>
+  </div>
 
-    <!-- Integrate D3 Code -->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script>
-        // Read data from the JSON file using d3.json
-        d3.json('data/result.json').then(data => {
-            // Check for NaN values in the data
-            const tournamentCounts = d3.map();
-            data.forEach(d => {
-                const tournament = d.tournament;
-                tournamentCounts.set(tournament, (tournamentCounts.get(tournament) || 0) + 1);
-            });
+  <!-- Integrate D3 Code -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script>
+    // Read data from the JSON file using d3.json
+    d3.json('data/result.json').then(data => {
+      // Check for NaN values in the data
+      const tournamentCounts = d3.map();
+      data.forEach(d => {
+        const tournament = d.tournament;
+        tournamentCounts.set(tournament, (tournamentCounts.get(tournament) || 0) + 1);
+      });
 
-            const tournamentData = d3.entries(tournamentCounts).map(entry => ({ tournament: entry.key, count: entry.value }));
+      const tournamentData = d3.entries(tournamentCounts).map(entry => ({
+        tournament: entry.key,
+        count: entry.value
+      }));
 
-            if (tournamentData.some(d => isNaN(d.count))) {
-                console.error('Data contains NaN values. Check the data or processing logic.');
-            }
+      if (tournamentData.some(d => isNaN(d.count))) {
+        console.error('Data contains NaN values. Check the data or processing logic.');
+      }
 
-            // Define a color scale
-            const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+      // Define a color scale
+      const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-            // Set up the SVG container
-            const svg = d3.select('#d3-container').append('svg')
-                .attr('width', '100%')
-                .attr('height', '100%')
-                .append('g')
-                .attr('transform', 'translate(50,50)'); // Add margins
+      // Set up the SVG container with adjusted position
+      const svg = d3.select('#d3-container').append('svg')
+        .attr('width', '100%')
+        .attr('height', '100%')
+        .append('g')
+        .attr('transform', 'translate(45, 25)');
 
-            // Create a bar chart using D3
-            const xScale = d3.scaleBand()
-                .domain(tournamentData.map(d => d.tournament))
-                .range([0, 800])
-                .padding(0.1);
 
-            const yScale = d3.scaleLinear()
-                .domain([0, d3.max(tournamentData, d => d.count)])
-                .range([400, 0]);
+      // Create a bar chart using D3
+      const xScale = d3.scaleBand()
+        .domain(tournamentData.map(d => d.tournament))
+        .range([0, 800])
+        .padding(0.1);
 
-            svg.selectAll('rect')
-                .data(tournamentData)
-                .enter()
-                .append('rect')
-                .attr('x', d => xScale(d.tournament))
-                .attr('y', d => yScale(d.count))
-                .attr('width', xScale.bandwidth())
-                .attr('height', d => 400 - yScale(d.count))
-                .attr('fill', d => colorScale(d.tournament));
+      const yScale = d3.scaleLinear()
+        .domain([0, d3.max(tournamentData, d => d.count)])
+        .range([400, 0]);
 
-            // Add axes
-            const xAxis = d3.axisBottom(xScale);
-            const yAxis = d3.axisLeft(yScale);
+      svg.selectAll('rect')
+        .data(tournamentData)
+        .enter()
+        .append('rect')
+        .attr('x', d => xScale(d.tournament))
+        .attr('y', d => yScale(d.count))
+        .attr('width', xScale.bandwidth())
+        .attr('height', d => 400 - yScale(d.count))
+        .attr('fill', d => colorScale(d.tournament));
 
-            svg.append('g')
-                .attr('transform', 'translate(0,400)')
-                .call(xAxis)
-                .selectAll('text')
-                .style('text-anchor', 'end')
-                .attr('transform', 'rotate(-45)');
+      // Add axes
+      const xAxis = d3.axisBottom(xScale);
+      const yAxis = d3.axisLeft(yScale);
 
-            svg.append('g')
-                .call(yAxis);
+      svg.append('g')
+        .attr('transform', 'translate(0,400)')
+        .call(xAxis)
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('transform', 'rotate(-45)');
 
-            // Add labels
-            svg.append('text')
-                .attr('x', 400)
-                .attr('y', 450)
-                .attr('text-anchor', 'middle')
-                .text('Tournament');
+      svg.append('g')
+        .call(yAxis);
 
-            svg.append('text')
-                .attr('transform', 'rotate(-90)')
-                .attr('x', -200)
-                .attr('y', -40)
-                .attr('text-anchor', 'middle')
-                .text('Count');
-        }).catch(error => {
-            console.error('Error loading JSON file:', error);
-        });
-    </script>
+      // Add labels
+      svg.append('text')
+        .attr('x', 400)
+        .attr('y', 450)
+        .attr('text-anchor', 'middle')
+        .text('Tournament');
+
+      svg.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -200)
+        .attr('y', -40)
+        .attr('text-anchor', 'middle')
+        .text('Count');
+    }).catch(error => {
+      console.error('Error loading JSON file:', error);
+    });
+  </script>
 </body>
+
 </html>
