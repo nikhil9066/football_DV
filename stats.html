@@ -92,6 +92,26 @@
         .barAway {
             fill: orange;
         }
+
+        .next-button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            background-color: #4adc2d;
+            /* Adjust color as needed */
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            /* Add some space at the top */
+        }
+
+        .next-button:hover {
+            background-color: #45a529;
+            /* Adjust hover color as needed */
+        }
     </style>
 </head>
 
@@ -410,9 +430,14 @@
                 .attr("x", -(height / 2))
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
-                .text("Frequency"); 
+                .text("Frequency");
         }
+        document.querySelector('.next-button').addEventListener('click', function () {
+            // Perform any actions or navigate to another page
+            window.location.href = 'nextPage.html';
+        });
     </script>
+    <a href="backup.html" class="next-button">Next</a>
 </body>
 
 </html>
