@@ -46,3 +46,24 @@
 # print(gdf)
 # num_countries = len(gdf)
 # print(f"The number of countries is: {num_countries}")
+
+import pandas as pd
+
+# Read the CSV file into a DataFrame
+df = pd.read_csv('CSV files/results.csv')
+
+# Convert the 'date' column to datetime format
+df['date'] = pd.to_datetime(df['date'])
+
+# Group by date and count the number of matches played on each date
+matches_per_date = df.groupby('date').size().reset_index(name='matches_played')
+
+# Convert the 'date' column to the desired format
+matches_per_date['date'] = matches_per_date['date'].dt.strftime('%Y-%m-%d')
+
+# Convert 'matches_played' column to integers (optional)
+matches_per_date['matches_played'] = matches_per_date['matches_played'].astype(int)
+
+# Convert the DataFrame to JSON in the desired format and save it to a file
+matches_per_date.to_json('matches_per_date.json', orient='records', date_format='iso', date_unit='s', default_handler=str)
+
