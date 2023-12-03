@@ -1,199 +1,269 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <title>Stack Overflow - Calendar Heatmap</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Football Network Diagram</title>
   <style>
-    .body {
-      height: 97%;
+    body {
+      font-family: 'Arial', sans-serif;
     }
-
-    svg {
-      height: 1800px;
-      width: 97%;
+    .link {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+    .node {
+      stroke: #fff;
+      stroke-width: 1.5px;
     }
   </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.2.1/d3-color.js"></script>
-</head> 
-
+</head>
 <body>
-  <h3>Stack Overflow - Calendar Heatmap</h3>
-  <h4>Daily number of answered posts</h4>
-  <svg id="svg"></svg>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
   <script>
-    // Fetch the data from the JSON file
-    d3.json("data/matches_per_date.json").then(data => {
-      // Sort the data by date
-      data.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+    // Function to fetch JSON data
+    async function fetchData(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
+    }
 
-      const dateValues = data.map(dv => ({
-        date: d3.timeDay(new Date(dv.Date)),
-        value: dv.matches_played
-      }));
+    // Fetch the data from JSON files
+    Promise.all([
+      fetchData('data/goalscorers.json'),
+      fetchData('data/result.json'),
+      fetchData('data/shootouts.json')
+    ]).then(([goalscorersData, resultsData, shootoutsData]) => {
 
-      const svg = d3.select("#svg");
-      const {
-        width,
-        height
-      } = document
-        .getElementById("svg")
-        .getBoundingClientRect();
+      // Combine the data for linking nodes
+      const allTeams = Array.from(new Set([...goalscorersData.map(d => d.team), ...resultsData.map(d => d.home_team), ...resultsData.map(d => d.away_team), ...shootoutsData.map(d => d.home_team), ...shootoutsData.map(d => d.away_team)]));
 
-      function draw() {
-        const years = d3
-          .nest()
-          .key(d => d.date.getUTCFullYear())
-          .entries(dateValues)
-          .reverse();
+      const links = [];
+      resultsData.forEach(d => {
+        links.push({ source: d.home_team, target: d.away_team });
+      });
 
-        const values = dateValues.map(c => c.value);
-        const maxValue = d3.max(values);
-        const minValue = d3.min(values);
+      shootoutsData.forEach(d => {
+        links.push({ source: d.home_team, target: d.away_team });
+      });
 
-        const cellSize = 15;
-        const yearHeight = cellSize * 7;
+      const nodes = allTeams.map(team => ({ team }));
 
-        const group = svg.append("g");
+      // Set up SVG canvas dimensions
+      const width = 600;
+      const height = 400;
 
-        const year = group
-          .selectAll("g")
-          .data(years)
-          .join("g")
-          .attr(
-            "transform",
-            (d, i) => `translate(50, ${yearHeight * i + cellSize * 1.5})`
-          );
+      // Create SVG canvas
+      const svg = d3.select('body').append('svg')
+        .attr('width', width)
+        .attr('height', height);
 
-        year
-          .append("text")
-          .attr("x", -5)
-          .attr("y", -30)
-          .attr("text-anchor", "end")
-          .attr("font-size", 16)
-          .attr("font-weight", 550)
-          .attr("transform", "rotate(270)")
-          .text(d => d.key);
+      // Create force simulation
+      const simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.team))
+        .force('charge', d3.forceManyBody().strength(-50))
+        .force('center', d3.forceCenter(width / 2, height / 2));
 
-        const formatDay = d => ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d.getUTCDay()];
-        const countDay = d => d.getUTCDay();
-        const timeWeek = d3.utcSunday;
-        const formatDate = d3.utcFormat("%x");
-        const colorFn = d3
-          .scaleSequential(d3.interpolateBuGn)
-          .domain([Math.floor(minValue), Math.ceil(maxValue)]);
-        const format = d3.format("+.2%");
+      // Draw links
+      const link = svg.selectAll('.link')
+        .data(links)
+        .enter().append('line')
+        .attr('class', 'link');
 
-        year
-          .append("g")
-          .attr("text-anchor", "end")
-          .selectAll("text")
-          .data(d3.range(7).map(i => new Date(1995, 0, i)))
-          .join("text")
-          .attr("x", -5)
-          .attr("y", d => (countDay(d) + 0.5) * cellSize)
-          .attr("dy", "0.31em")
-          .attr("font-size", 12)
-          .text(formatDay);
+      // Draw nodes
+      const node = svg.selectAll('.node')
+        .data(nodes)
+        .enter().append('circle')
+        .attr('class', 'node')
+        .attr('r', 10)
+        .call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended));
 
-        year
-          .append("g")
-          .selectAll("rect")
-          .data(d => d.values)
-          .join("rect")
-          .attr("width", cellSize - 1.5)
-          .attr("height", cellSize - 1.5)
-          .attr(
-            "x",
-            (d, i) => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 10
-          )
-          .attr("y", d => countDay(d.date) * cellSize + 0.5)
-          .attr("fill", d => colorFn(d.value))
-          .append("title")
-          .text(d => `${formatDate(d.date)}: ${d.value.toFixed(2)}`);
+      // Add labels to nodes
+      const label = svg.selectAll(null)
+        .data(nodes)
+        .enter().append('text')
+        .text(d => d.team)
+        .attr('font-size', 10)
+        .attr('dx', 12)
+        .attr('dy', 4);
 
-        const legend = group
-          .append("g")
-          .attr(
-            "transform",
-            `translate(10, ${years.length * yearHeight + cellSize * 4})`
-          );
+      // Update positions on each tick
+      simulation.on('tick', () => {
+        link
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
 
-        const categoriesCount = 10;
-        const categories = [...Array(categoriesCount)].map((_, i) => {
-          const upperBound = (maxValue / categoriesCount) * (i + 1);
-          const lowerBound = (maxValue / categoriesCount) * i;
+        node
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y);
 
-          return {
-            upperBound,
-            lowerBound,
-            color: d3.interpolateBuGn(upperBound / maxValue),
-            selected: true
-          };
-        });
+        label
+          .attr('x', d => d.x)
+          .attr('y', d => d.y);
+      });
 
-        const legendWidth = 60;
-
-        function toggle(legend) {
-          const {
-            lowerBound,
-            upperBound,
-            selected
-          } = legend;
-
-          legend.selected = !selected;
-
-          const highlightedDates = years.map(y => ({
-            key: y.key,
-            values: y.values.filter(
-              v => v.value > lowerBound && v.value <= upperBound
-            )
-          }));
-
-          year
-            .data(highlightedDates)
-            .selectAll("rect")
-            .data(d => d.values, d => d.date)
-            .transition()
-            .duration(500)
-            .attr("fill", d => (legend.selected ? colorFn(d.value) : "white"));
-        }
-
-        legend
-          .selectAll("rect")
-          .data(categories)
-          .enter()
-          .append("rect")
-          .attr("fill", d => d.color)
-          .attr("x", (d, i) => legendWidth * i)
-          .attr("width", legendWidth)
-          .attr("height", 15)
-          .on("click", toggle);
-
-        legend
-          .selectAll("text")
-          .data(categories)
-          .join("text")
-          .attr("transform", "rotate(90)")
-          .attr("y", (d, i) => -legendWidth * i)
-          .attr("dy", -30)
-          .attr("x", 18)
-          .attr("text-anchor", "start")
-          .attr("font-size", 11)
-          .text(d => `${d.lowerBound.toFixed(2)} - ${d.upperBound.toFixed(2)}`);
-
-        legend
-          .append("text")
-          .attr("dy", -5)
-          .attr("font-size", 14)
-          .attr("text-decoration", "underline")
-          .text("Click on category to select/deselect days");
+      // Functions for drag behavior
+      function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
       }
 
-      draw();
+      function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }
+
+      function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
     });
   </script>
 </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Football Network Diagram</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    .link {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+    .node {
+      stroke: #fff;
+      stroke-width: 1.5px;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script>
+    // Function to fetch JSON data
+    async function fetchData(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
+    }
 
+    // Fetch the data from JSON files
+    Promise.all([
+      fetchData('data/goalscorers.json'),
+      fetchData('data/result.json'),
+      fetchData('data/shootouts.json')
+    ]).then(([goalscorersData, resultsData, shootoutsData]) => {
+
+      // Combine the data for linking nodes
+      const allTeams = Array.from(new Set([...goalscorersData.map(d => d.team), ...resultsData.map(d => d.home_team), ...resultsData.map(d => d.away_team), ...shootoutsData.map(d => d.home_team), ...shootoutsData.map(d => d.away_team)]));
+
+      const links = [];
+      resultsData.forEach(d => {
+        links.push({ source: d.home_team, target: d.away_team });
+      });
+
+      shootoutsData.forEach(d => {
+        links.push({ source: d.home_team, target: d.away_team });
+      });
+
+      const nodes = allTeams.map(team => ({ team }));
+
+      // Set up SVG canvas dimensions to fill the entire screen
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // Create SVG canvas
+      const svg = d3.select('body').append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .call(d3.zoom().on('zoom', zoomed));
+
+      const container = svg.append('g'); // Container for nodes and links
+
+      // Create force simulation
+      const simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.team))
+        .force('charge', d3.forceManyBody().strength(-50))
+        .force('center', d3.forceCenter(width / 2, height / 2));
+
+      // Draw links
+      const link = container.selectAll('.link')
+        .data(links)
+        .enter().append('line')
+        .attr('class', 'link');
+
+      // Draw nodes
+      const node = container.selectAll('.node')
+        .data(nodes)
+        .enter().append('circle')
+        .attr('class', 'node')
+        .attr('r', 10)
+        .call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended));
+
+      // Add labels to nodes
+      const label = container.selectAll(null)
+        .data(nodes)
+        .enter().append('text')
+        .text(d => d.team)
+        .attr('font-size', 10)
+        .attr('dx', 12)
+        .attr('dy', 4);
+
+      // Update positions on each tick
+      simulation.on('tick', () => {
+        link
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+
+        node
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y);
+
+        label
+          .attr('x', d => d.x)
+          .attr('y', d => d.y);
+      });
+
+      // Functions for drag behavior
+      function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }
+
+      function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+
+      // Function for zoom behavior
+      function zoomed() {
+        container.attr('transform', d3.event.transform);
+      }
+    });
+  </script>
+</body>
 </html>
