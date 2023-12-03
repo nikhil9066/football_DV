@@ -12,23 +12,17 @@
       height: 1800px;
       width: 97%;
     }
-
-    button {
-      margin: 5px;
-    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.2.1/d3-color.js"></script>
-</head>
+</head> 
 
 <body>
   <h3>Stack Overflow - Calendar Heatmap</h3>
   <h4>Daily number of answered posts</h4>
   <svg id="svg"></svg>
   <script>
-    let currentStartYear = null;
-
     // Fetch the data from the JSON file
     d3.json("data/matches_per_date.json").then(data => {
       // Sort the data by date
@@ -195,37 +189,9 @@
           .attr("font-size", 14)
           .attr("text-decoration", "underline")
           .text("Click on category to select/deselect days");
-
-        // Set the current start year to the earliest year
-        currentStartYear = years[years.length - 1].key;
       }
 
       draw();
-
-      // Function to toggle the display for the next or previous 10 years
-      window.toggleYear = function (step) {
-        const currentIndex = years.findIndex(year => year.key === currentStartYear);
-        const newIndex = currentIndex + step / 10;
-
-        if (years[newIndex]) {
-          currentStartYear = years[newIndex].key;
-          updateHeatmap(years[newIndex].values);
-        }
-      };
-
-      // Function to update the heatmap based on the selected year
-      function updateHeatmap(selectedYearValues) {
-        year
-          .data([{
-            key: currentStartYear,
-            values: selectedYearValues
-          }])
-          .selectAll("rect")
-          .data(d => d.values, d => d.date)
-          .transition()
-          .duration(500)
-          .attr("fill", d => colorFn(d.value));
-      }
     });
   </script>
 </body>

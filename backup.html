@@ -14,123 +14,62 @@
 
     .container {
       display: flex;
-      height: 100vh;
-      /* 100% of the viewport height */
+      margin: 0 auto;
+      height: 60vh;
+    }
+
+    .top-container {
+      height: 60vh;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
     }
 
     .left-container,
     .right-container {
       flex: 1;
-      /* Equal flex distribution for both containers */
       border: 1px solid #ccc;
       display: flex;
       flex-direction: column;
-      /* Adjusted for better visualization */
     }
 
-    .top-section,
-    .bottom-section {
-      height: 50%;
-      /* Each section takes 50% of the container height */
+    .top-section {
+      height: 100%;
       display: flex;
       flex-direction: column;
-      /* Adjusted for better visualization */
       justify-content: center;
       align-items: center;
       border: 1px solid #ddd;
     }
 
     .left-container .top-section,
-    .left-container .bottom-section {
-      border-bottom: none;
-      /* Remove border at the bottom of Screen 2 */
+    .right-container .top-section {
+      flex: 1;
     }
 
-    .bottom-section {
-      border-top: none;
-      /* Remove border at the top of Screen 5 */
+    .left-container .top-section .semi-heading,
+    .left-container .top-section .d3-container,
+    .right-container .top-section h1 {
+      margin: 0;
     }
 
-    .right-container .bottom-section {
-      border-bottom: none;
-      /* Remove border at the bottom of Screen 4 */
-    }
-
-    .top-section h1 {
-      writing-mode: vertical-rl;
-      /* Vertical writing mode */
-      transform: rotate(180deg);
-      /* Rotate text */
-    }
-
-    .top-section h1:after {
-      content: '\00a0';
-      /* Add non-breaking space to maintain height */
-    }
-
-    /* Adjustments for better visualization */
-    .left-container .bottom-section {
-      border-bottom: none;
-      /* Remove border at the bottom of Screen 2 */
-    }
-
-    /* Screen 1 */
     .left-container .top-section {
       background-color: #e6f7ff;
-      /* Light blue background for Screen 1 */
-      position: relative;
-      /* Position relative for absolute positioning of D3 SVG */
-      text-align: center;
-      /* Center the text */
-    }
-
-    .left-container .top-section h1 {
-      font-size: 2em;
-      /* Adjust the font size as needed */
-      font-weight: bold;
-      /* Make the text bold */
-      margin: 0;
-      /* Remove default margin */
     }
 
     .left-container .top-section .semi-heading {
       font-size: 1.5em;
-      /* Semi-heading font size */
       font-weight: bold;
-      /* Make the text bold */
       margin-top: 10px;
-      /* Margin between heading and graph */
     }
 
-    .left-container .top-section .d3-container {
+    .left-container .top-section .d3-container #map {
       width: 100%;
       height: 100%;
-      flex: 1;
-      /* Occupy remaining space in the top section */
     }
 
-    .left-container .bottom-section {
-      background-color: #ccf2ff;
-      /* Lighter blue background for Screen 2 */
-    }
-
-    /* Screen 3 */
     .right-container .top-section {
       background-color: #ffe6e6;
-      /* Light red background for Screen 3 */
-      position: relative;
-      /* Position relative for absolute positioning of D3 SVG */
-      text-align: center;
-      /* Center the text */
-    }
-
-    .right-container .top-section h1 {
-      font-size: 2em;
-      /* Adjust the font size as needed */
-      font-weight: bold;
-      /* Make the text bold */
-      margin: 0;
-      /* Remove default margin */
     }
 
     .right-container .bottom-section {
@@ -139,19 +78,10 @@
       align-items: center;
       border: 1px solid #ddd;
       background-color: #ffcccc;
-      /* Lighter red background for Screen 4 */
     }
 
-    /* Style adjustments for better visualization */
-    .right-container .top-section,
-    .right-container .bottom-section {
-      border-left: none;
-      /* Remove border at the left of Screen 3 and 7 */
-    }
-
-    /* Remove border at the bottom of Screen 4 */
-    .right-container .bottom-section {
-      border-bottom: none;
+    .right-container {
+      border-left: 1px solid #ccc;
     }
 
     /* Integrate D3 Code */
@@ -159,52 +89,87 @@
       width: 100%;
       height: 100%;
     }
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.2.1/d3-color.js"></script>
 </head>
 
 <body>
   <div class="container">
-    <div class="left-container">
-      <div class="top-section">
-        <div class="semi-heading">Time Series Analysis</div>
-        <!-- Container for D3 chart -->
-        <div class="d3-container" id="d3-container"></div>
+    <div class="top-container">
+      <div class="left-container">
+        <div class="top-section">
+          <div class="semi-heading">Time Series Analysis</div>
+          <div class="d3-container" id="d3-container"></div>
+        </div>
       </div>
-      <div class="bottom-section">
-        <!-- Content for Screen 2 -->
-        Screen 2
-      </div>
-    </div>
-    <div class="right-container">
-      <div class="top-section">
-        <h1>Screen 3</h1>
-      </div>
-      <div class="bottom-section">
-        <!-- Content for Screen 4 -->
-        Screen 4
+      <div class="right-container">
+        <div>
+          <input type="button" value="AFC Asian Cup" onclick="updateData('AFC Asian Cup')">
+          <input type="button" value="African Cup of Nations" onclick="updateData('African Cup of Nations')">
+          <input type="button" value="Confederations Cup" onclick="updateData('Confederations Cup')">
+          <input type="button" value="Copa América" onclick="updateData('Copa América')">
+        </div>
+        <div>
+          <input type="button" value="FIFA World Cup" onclick="updateData('FIFA World Cup')">
+          <input type="button" value="King's Cup" onclick="updateData('King\'s Cup')">
+          <input type="button" value="UEFA Nations League" onclick="updateData('UEFA Nations League')">
+          <input type="button" value="UEFA Euro" onclick="updateData('UEFA Euro')">
+        </div>
+        <div id="visualization"></div> <!-- Bar chart -->
+        <div id="map"></div> <!-- Interactive map -->
       </div>
     </div>
   </div>
 
   <!-- Integrate D3 Code -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+
   <script>
     // Read data from the JSON file using d3.json
     d3.json('data/result.json').then(data => {
+      // Check if the data is an array
+      console.log("If here");
+      if (!Array.isArray(data)) {
+        console.error('Data is not in the expected format. Check the JSON file.');
+        console.log("After if here");
+        return;
+      }
+
       // Check for NaN values in the data
-      const tournamentCounts = d3.map();
+      const tournamentCounts = {};
+
       data.forEach(d => {
         const tournament = d.tournament;
-        tournamentCounts.set(tournament, (tournamentCounts.get(tournament) || 0) + 1);
+        if (tournament) {
+          tournamentCounts[tournament] = (tournamentCounts[tournament] || 0) + 1;
+        } else {
+          console.warn('Encountered a data entry without a tournament:', d);
+        }
       });
 
-      const tournamentData = d3.entries(tournamentCounts).map(entry => ({
-        tournament: entry.key,
-        count: entry.value
-      }));
+      if (Object.keys(tournamentCounts).length === 0) {
+        console.error('No valid tournament data found.');
+        return;
+      }
 
+      const tournamentData = Object.entries(tournamentCounts).map(entry => ({
+        tournament: entry[0],
+        count: entry[1]
+      }));
+      // Rest of your code...
+      // Rest of your code...
+
+      // Check for NaN values in the count property
       if (tournamentData.some(d => isNaN(d.count))) {
         console.error('Data contains NaN values. Check the data or processing logic.');
+        return;
       }
 
       // Define a color scale
@@ -212,16 +177,15 @@
 
       // Set up the SVG container with adjusted position
       const svg = d3.select('#d3-container').append('svg')
-        .attr('width', '100%')
+        .attr('width', '10%')
         .attr('height', '100%')
         .append('g')
         .attr('transform', 'translate(45, 25)');
 
-
       // Create a bar chart using D3
       const xScale = d3.scaleBand()
         .domain(tournamentData.map(d => d.tournament))
-        .range([0, 800])
+        .range([0, 900])
         .padding(0.1);
 
       const yScale = d3.scaleLinear()
@@ -254,14 +218,14 @@
 
       // Add labels
       svg.append('text')
-        .attr('x', 400)
-        .attr('y', 450)
+        .attr('x', 410)
+        .attr('y', 570)
         .attr('text-anchor', 'middle')
         .text('Tournament');
 
       svg.append('text')
         .attr('transform', 'rotate(-90)')
-        .attr('x', -200)
+        .attr('x', -180)
         .attr('y', -40)
         .attr('text-anchor', 'middle')
         .text('Count');
@@ -269,6 +233,298 @@
       console.error('Error loading JSON file:', error);
     });
   </script>
+
+  <div class="bottom-section">
+    <!-- Content for Screen 4 -->
+    <h3>Stack Overflow - Calendar Heatmap</h3>
+    <h4>Daily number of answered posts</h4>
+    <svg id="svg"></svg>
+    <script>
+      // Fetch the data from the JSON file
+      d3.json("data/matches_per_date.json").then(data => {
+        // Sort the data by date
+        data.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+
+        const dateValues = data.map(dv => ({
+          date: d3.timeDay(new Date(dv.Date)),
+          value: dv.matches_played
+        }));
+
+        const svg = d3.select("#svg");
+        const {
+          width,
+          height
+        } = document
+          .getElementById("svg")
+          .getBoundingClientRect();
+
+        function draw() {
+          const years = d3
+            .nest()
+            .key(d => d.date.getUTCFullYear())
+            .entries(dateValues)
+            .reverse();
+
+          const values = dateValues.map(c => c.value);
+          const maxValue = d3.max(values);
+          const minValue = d3.min(values);
+
+          const cellSize = 15;
+          const yearHeight = cellSize * 7;
+
+          const group = svg.append("g");
+
+          const year = group
+            .selectAll("g")
+            .data(years)
+            .join("g")
+            .attr(
+              "transform",
+              (d, i) => `translate(50, ${yearHeight * i + cellSize * 1.5})`
+            );
+
+          year
+            .append("text")
+            .attr("x", -5)
+            .attr("y", -30)
+            .attr("text-anchor", "end")
+            .attr("font-size", 16)
+            .attr("font-weight", 550)
+            .attr("transform", "rotate(270)")
+            .text(d => d.key);
+
+          const formatDay = d => ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d.getUTCDay()];
+          const countDay = d => d.getUTCDay();
+          const timeWeek = d3.utcSunday;
+          const formatDate = d3.utcFormat("%x");
+          const colorFn = d3
+            .scaleSequential(d3.interpolateBuGn)
+            .domain([Math.floor(minValue), Math.ceil(maxValue)]);
+          const format = d3.format("+.2%");
+
+          year
+            .append("g")
+            .attr("text-anchor", "end")
+            .selectAll("text")
+            .data(d3.range(7).map(i => new Date(1995, 0, i)))
+            .join("text")
+            .attr("x", -5)
+            .attr("y", d => (countDay(d) + 0.5) * cellSize)
+            .attr("dy", "0.31em")
+            .attr("font-size", 12)
+            .text(formatDay);
+
+          year
+            .append("g")
+            .selectAll("rect")
+            .data(d => d.values)
+            .join("rect")
+            .attr("width", cellSize - 1.5)
+            .attr("height", cellSize - 1.5)
+            .attr(
+              "x",
+              (d, i) => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 10
+            )
+            .attr("y", d => countDay(d.date) * cellSize + 0.5)
+            .attr("fill", d => colorFn(d.value))
+            .append("title")
+            .text(d => `${formatDate(d.date)}: ${d.value.toFixed(2)}`);
+
+          const legend = group
+            .append("g")
+            .attr(
+              "transform",
+              `translate(10, ${years.length * yearHeight + cellSize * 4})`
+            );
+
+          const categoriesCount = 10;
+          const categories = [...Array(categoriesCount)].map((_, i) => {
+            const upperBound = (maxValue / categoriesCount) * (i + 1);
+            const lowerBound = (maxValue / categoriesCount) * i;
+
+            return {
+              upperBound,
+              lowerBound,
+              color: d3.interpolateBuGn(upperBound / maxValue),
+              selected: true
+            };
+          });
+
+          const legendWidth = 60;
+
+          function toggle(legend) {
+            const {
+              lowerBound,
+              upperBound,
+              selected
+            } = legend;
+
+            legend.selected = !selected;
+
+            const highlightedDates = years.map(y => ({
+              key: y.key,
+              values: y.values.filter(
+                v => v.value > lowerBound && v.value <= upperBound
+              )
+            }));
+
+            year
+              .data(highlightedDates)
+              .selectAll("rect")
+              .data(d => d.values, d => d.date)
+              .transition()
+              .duration(500)
+              .attr("fill", d => (legend.selected ? colorFn(d.value) : "white"));
+          }
+
+          legend
+            .selectAll("rect")
+            .data(categories)
+            .enter()
+            .append("rect")
+            .attr("fill", d => d.color)
+            .attr("x", (d, i) => legendWidth * i)
+            .attr("width", legendWidth)
+            .attr("height", 15)
+            .on("click", toggle);
+
+          legend
+            .selectAll("text")
+            .data(categories)
+            .join("text")
+            .attr("transform", "rotate(90)")
+            .attr("y", (d, i) => -legendWidth * i)
+            .attr("dy", -30)
+            .attr("x", 18)
+            .attr("text-anchor", "start")
+            .attr("font-size", 11)
+            .text(d => `${d.lowerBound.toFixed(2)} - ${d.upperBound.toFixed(2)}`);
+
+          legend
+            .append("text")
+            .attr("dy", -5)
+            .attr("font-size", 14)
+            .attr("text-decoration", "underline")
+            .text("Click on category to select/deselect days");
+        }
+
+        draw();
+      });
+
+      // Contentfor Screen 3
+
+      function updateContent() {
+        var selectedContinent = document.getElementById("continentDropdown").value;
+        var continentNameElement = document.getElementById("continentName");
+        var continentTextElement = document.getElementById("continentText");
+        continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
+          selectedContinent.slice(1);
+        continentTextElement.textContent = "Continents Continents Continents";
+        if (selectedContinent !== 'all') {
+          drawGeographicalMap(selectedContinent);
+        }
+      }
+
+      function drawGeographicalMap(continent) {
+        var svg = d3.select("#map");
+
+        d3.json("geo//World_Continents.geojson").then(function (continentsData) {
+          var selectedContinentData = continentsData.features.find(function (feature) {
+            return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
+          });
+          if (selectedContinentData) {
+            var projection = d3.geoNaturalEarth1()
+              .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
+            var path = d3.geoPath().projection(projection);
+            svg.selectAll("*").remove();
+            svg.selectAll("path")
+              .data([selectedContinentData])
+              .enter().append("path")
+              .attr("d", path)
+              .attr("fill", "#4adc2d")
+              .attr("stroke", "#fff")
+              .attr("stroke-width", 1);
+          }
+        }).catch(function (error) {
+          console.error("Error loading GeoJSON data:", error);
+        });
+      }
+      const width = 500;
+      const height = 200;
+      const margin = {
+        top: 20,
+        right: 20,
+        bottom: 30,
+        left: 40
+      };
+      const svg = d3.select("#visualization").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      const xScale = d3.scaleBand()
+        .domain(d3.range(10))
+        .range([0, width])
+        .padding(0.1);
+      const yScale = d3.scaleLinear()
+        .range([200, 0]);
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xScale));
+      svg.append("g")
+        .call(d3.axisLeft(yScale));
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom)
+        .attr("text-anchor", "middle")
+        .text("Top 10 Teams");
+      svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left)
+        .attr("x", -height / 2)
+        .attr("dy", "1em")
+        .attr("text-anchor", "middle")
+        .text("Matches Won");
+
+      function updateData(selectedTournament) {
+        d3.json("data/result.json").then(function (results) {
+          const filteredResults = results.filter(d => d.tournament === selectedTournament);
+          const winningHomeTeams = filteredResults.reduce((acc, d) => {
+            const teamIndex = acc.findIndex(entry => entry[0] === d.home_team);
+            if (teamIndex !== -1) {
+              acc[teamIndex][1] += d.home_score > d.away_score ? 1 : 0;
+            } else {
+              acc.push([d.home_team, d.home_score > d.away_score ? 1 : 0]);
+            }
+            return acc;
+          }, []);
+
+          yScale.domain([0, d3.max(winningHomeTeams, d => d[1])]);
+          const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+          const bars = svg.selectAll(".bar")
+            .data(winningHomeTeams.slice(0, 10));
+          bars.exit().remove();
+          const newBars = bars.enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", (d, i) => xScale(i))
+            .attr("width", xScale.bandwidth())
+            .attr("y", height)
+            .attr("height", 0)
+            .attr("fill", (d, i) => colorScale(i));
+          const mergedBars = newBars.merge(bars);
+          mergedBars.transition()
+            .duration(1000)
+            .attr("y", d => yScale(d[1]))
+            .attr("height", d => height - yScale(d[1]));
+          svg.select(".axisLeft")
+            .call(d3.axisLeft(yScale));
+          svg.select(".label")
+            .text(selectedTournament);
+        });
+      }
+      updateData("AFC Asian Cup");
+    </script>
+  </div>
 </body>
 
 </html>
