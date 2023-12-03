@@ -31,6 +31,8 @@
       border: 1px solid #ccc;
       display: flex;
       flex-direction: column;
+      background-color: #fdffe1;
+      /* Light background color */
     }
 
     .top-section {
@@ -56,6 +58,7 @@
     .left-container .top-section {
       background-color: #e6f7ff;
     }
+
 
     .left-container .top-section .semi-heading {
       font-size: 1.5em;
@@ -92,7 +95,13 @@
 
     svg {
       width: 100%;
-      height: 100%;
+      height: 1800px;
+    }
+
+    #map {
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
@@ -128,7 +137,6 @@
   </div>
 
   <!-- Integrate D3 Code -->
-  <script src="https://d3js.org/d3.v5.min.js"></script>
   <script src="https://d3js.org/d3.v6.min.js"></script>
 
   <script>
@@ -219,7 +227,7 @@
       // Add labels
       svg.append('text')
         .attr('x', 410)
-        .attr('y', 570)
+        .attr('y', 500)
         .attr('text-anchor', 'middle')
         .text('Tournament');
 
@@ -293,7 +301,7 @@
             .attr("transform", "rotate(270)")
             .text(d => d.key);
 
-          const formatDay = d => ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d.getUTCDay()];
+          const formatDay = d => ["", "Tu", "", "Th", "", "Sa", "Su"][d.getUTCDay()];
           const countDay = d => d.getUTCDay();
           const timeWeek = d3.utcSunday;
           const formatDate = d3.utcFormat("%x");
@@ -411,8 +419,7 @@
         draw();
       });
 
-      // Contentfor Screen 3
-
+      // Content for Screen 3
       function updateContent() {
         var selectedContinent = document.getElementById("continentDropdown").value;
         var continentNameElement = document.getElementById("continentName");
@@ -449,6 +456,46 @@
           console.error("Error loading GeoJSON data:", error);
         });
       }
+
+
+      // // Contentfor Screen 3
+
+      // function updateContent() {
+      //   var selectedContinent = document.getElementById("continentDropdown").value;
+      //   var continentNameElement = document.getElementById("continentName");
+      //   var continentTextElement = document.getElementById("continentText");
+      //   continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
+      //     selectedContinent.slice(1);
+      //   continentTextElement.textContent = "Continents Continents Continents";
+      //   if (selectedContinent !== 'all') {
+      //     drawGeographicalMap(selectedContinent);
+      //   }
+      // }
+
+      // function drawGeographicalMap(continent) {
+      //   var svg = d3.select("#map");
+
+      //   d3.json("geo//World_Continents.geojson").then(function (continentsData) {
+      //     var selectedContinentData = continentsData.features.find(function (feature) {
+      //       return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
+      //     });
+      //     if (selectedContinentData) {
+      //       var projection = d3.geoNaturalEarth1()
+      //         .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
+      //       var path = d3.geoPath().projection(projection);
+      //       svg.selectAll("*").remove();
+      //       svg.selectAll("path")
+      //         .data([selectedContinentData])
+      //         .enter().append("path")
+      //         .attr("d", path)
+      //         .attr("fill", "#4adc2d")
+      //         .attr("stroke", "#fff")
+      //         .attr("stroke-width", 1);
+      //     }
+      //   }).catch(function (error) {
+      //     console.error("Error loading GeoJSON data:", error);
+      //   });
+      // }
       const width = 500;
       const height = 200;
       const margin = {
