@@ -19,7 +19,7 @@
     }
 
     .top-container {
-      height: 60vh;
+      height: 70vh;
       width: 100%;
       box-sizing: border-box;
       display: flex;
@@ -32,6 +32,7 @@
       display: flex;
       flex-direction: column;
       background-color: #fdffe1;
+      margin-bottom: 20px;
       /* Light background color */
     }
 
@@ -40,8 +41,11 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
+      /* Align content to the top */
       border: 1px solid #ddd;
+      padding: 100px;
+      /* Add padding for better spacing */
     }
 
     .left-container .top-section,
@@ -57,6 +61,8 @@
 
     .left-container .top-section {
       background-color: #e6f7ff;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
 
@@ -73,6 +79,8 @@
 
     .right-container .top-section {
       background-color: #ffe6e6;
+      padding: 40px;
+      box-sizing: border-box;
     }
 
     .right-container .bottom-section {
@@ -84,7 +92,22 @@
     }
 
     .right-container {
+      /* border-left: 1px solid #ccc; */
       border-left: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .right-container>div {
+      margin-top: 20px;
+      /* Add margin to create space between buttons and the top */
+      text-align: center;
+      /* Center align the buttons */
+    }
+
+    .right-container input {
+      margin-bottom: 10px;
+      /* Add margin to create space between buttons */
     }
 
     /* Integrate D3 Code */
@@ -103,6 +126,28 @@
       justify-content: center;
       align-items: center;
     }
+
+    #screen3 {
+      text-align: center;
+    }
+
+    #svg {
+      margin: 0 30%;
+      /* Adjust the right margin to move it towards the left */
+      display: block;
+    }
+
+    #visualization {
+      margin: 0 auto;
+      text-align: center;
+      width: 60%;
+      /* Adjust the width as needed */
+    }
+
+    #visualization svg {
+      display: block;
+      margin: 0 auto;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.2.1/d3-color.js"></script>
@@ -113,7 +158,7 @@
     <div class="top-container">
       <div class="left-container">
         <div class="top-section">
-          <div class="semi-heading">Time Series Analysis</div>
+          <div class="semi-heading">Tournament Analysis</div>
           <div class="d3-container" id="d3-container"></div>
         </div>
       </div>
@@ -212,7 +257,8 @@
 
       // Add axes
       const xAxis = d3.axisBottom(xScale);
-      const yAxis = d3.axisLeft(yScale);
+      // const yAxis = d3.axisLeft(yScale);
+      const yAxis = d3.axisLeft(yScale).ticks(5).tickFormat(d => d * 100);
 
       svg.append('g')
         .attr('transform', 'translate(0,400)')
@@ -227,7 +273,7 @@
       // Add labels
       svg.append('text')
         .attr('x', 410)
-        .attr('y', 500)
+        .attr('y', 570)
         .attr('text-anchor', 'middle')
         .text('Tournament');
 
@@ -243,334 +289,299 @@
   </script>
 
   <div class="bottom-section">
-    <!-- Content for Screen 4 -->
-    <h3>Stack Overflow - Calendar Heatmap</h3>
-    <h4>Daily number of answered posts</h4>
-    <svg id="svg"></svg>
-    <script>
-      // Fetch the data from the JSON file
-      d3.json("data/matches_per_date.json").then(data => {
-        // Sort the data by date
-        data.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+    <div id="screen3">
+      <h2>|</h2>
+      <h2>|</h2>
+      <h1>Heatmap</h1>
+      <h2>Number of Matched played</h2>
+      <svg id="svg"></svg>
+      <script>
+        // Fetch the data from the JSON file
+        d3.json("data/matches_per_date.json").then(data => {
+          // Sort the data by date
+          data.sort((a, b) => new Date(a.Date) - new Date(b.Date));
 
-        const dateValues = data.map(dv => ({
-          date: d3.timeDay(new Date(dv.Date)),
-          value: dv.matches_played
-        }));
+          const dateValues = data.map(dv => ({
+            date: d3.timeDay(new Date(dv.Date)),
+            value: dv.matches_played
+          }));
 
-        const svg = d3.select("#svg");
-        const {
-          width,
-          height
-        } = document
-          .getElementById("svg")
-          .getBoundingClientRect();
+          const svg = d3.select("#svg");
+          const {
+            width,
+            height
+          } = document
+            .getElementById("svg")
+            .getBoundingClientRect();
 
-        function draw() {
-          const years = d3
-            .nest()
-            .key(d => d.date.getUTCFullYear())
-            .entries(dateValues)
-            .reverse();
+          function draw() {
+            const years = d3
+              .nest()
+              .key(d => d.date.getUTCFullYear())
+              .entries(dateValues)
+              .reverse();
 
-          const values = dateValues.map(c => c.value);
-          const maxValue = d3.max(values);
-          const minValue = d3.min(values);
+            const values = dateValues.map(c => c.value);
+            const maxValue = d3.max(values);
+            const minValue = d3.min(values);
 
-          const cellSize = 15;
-          const yearHeight = cellSize * 7;
+            const cellSize = 15;
+            const yearHeight = cellSize * 7;
 
-          const group = svg.append("g");
+            const group = svg.append("g");
 
-          const year = group
-            .selectAll("g")
-            .data(years)
-            .join("g")
-            .attr(
-              "transform",
-              (d, i) => `translate(50, ${yearHeight * i + cellSize * 1.5})`
-            );
-
-          year
-            .append("text")
-            .attr("x", -5)
-            .attr("y", -30)
-            .attr("text-anchor", "end")
-            .attr("font-size", 16)
-            .attr("font-weight", 550)
-            .attr("transform", "rotate(270)")
-            .text(d => d.key);
-
-          const formatDay = d => ["", "Tu", "", "Th", "", "Sa", "Su"][d.getUTCDay()];
-          const countDay = d => d.getUTCDay();
-          const timeWeek = d3.utcSunday;
-          const formatDate = d3.utcFormat("%x");
-          const colorFn = d3
-            .scaleSequential(d3.interpolateBuGn)
-            .domain([Math.floor(minValue), Math.ceil(maxValue)]);
-          const format = d3.format("+.2%");
-
-          year
-            .append("g")
-            .attr("text-anchor", "end")
-            .selectAll("text")
-            .data(d3.range(7).map(i => new Date(1995, 0, i)))
-            .join("text")
-            .attr("x", -5)
-            .attr("y", d => (countDay(d) + 0.5) * cellSize)
-            .attr("dy", "0.31em")
-            .attr("font-size", 12)
-            .text(formatDay);
-
-          year
-            .append("g")
-            .selectAll("rect")
-            .data(d => d.values)
-            .join("rect")
-            .attr("width", cellSize - 1.5)
-            .attr("height", cellSize - 1.5)
-            .attr(
-              "x",
-              (d, i) => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 10
-            )
-            .attr("y", d => countDay(d.date) * cellSize + 0.5)
-            .attr("fill", d => colorFn(d.value))
-            .append("title")
-            .text(d => `${formatDate(d.date)}: ${d.value.toFixed(2)}`);
-
-          const legend = group
-            .append("g")
-            .attr(
-              "transform",
-              `translate(10, ${years.length * yearHeight + cellSize * 4})`
-            );
-
-          const categoriesCount = 10;
-          const categories = [...Array(categoriesCount)].map((_, i) => {
-            const upperBound = (maxValue / categoriesCount) * (i + 1);
-            const lowerBound = (maxValue / categoriesCount) * i;
-
-            return {
-              upperBound,
-              lowerBound,
-              color: d3.interpolateBuGn(upperBound / maxValue),
-              selected: true
-            };
-          });
-
-          const legendWidth = 60;
-
-          function toggle(legend) {
-            const {
-              lowerBound,
-              upperBound,
-              selected
-            } = legend;
-
-            legend.selected = !selected;
-
-            const highlightedDates = years.map(y => ({
-              key: y.key,
-              values: y.values.filter(
-                v => v.value > lowerBound && v.value <= upperBound
-              )
-            }));
+            const year = group
+              .selectAll("g")
+              .data(years)
+              .join("g")
+              .attr(
+                "transform",
+                (d, i) => `translate(50, ${yearHeight * i + cellSize * 1.5})`
+              );
 
             year
-              .data(highlightedDates)
+              .append("text")
+              .attr("x", -5)
+              .attr("y", -30)
+              .attr("text-anchor", "end")
+              .attr("font-size", 16)
+              .attr("font-weight", 550)
+              .attr("transform", "rotate(270)")
+              .text(d => d.key);
+
+            const formatDay = d => ["", "Tu", "", "Th", "", "Sa", "Su"][d.getUTCDay()];
+            const countDay = d => d.getUTCDay();
+            const timeWeek = d3.utcSunday;
+            const formatDate = d3.utcFormat("%x");
+            const colorFn = d3
+              .scaleSequential(d3.interpolateBuGn)
+              .domain([Math.floor(minValue), Math.ceil(maxValue)]);
+            const format = d3.format("+.2%");
+
+            year
+              .append("g")
+              .attr("text-anchor", "end")
+              .selectAll("text")
+              .data(d3.range(7).map(i => new Date(1995, 0, i)))
+              .join("text")
+              .attr("x", -5)
+              .attr("y", d => (countDay(d) + 0.5) * cellSize)
+              .attr("dy", "0.31em")
+              .attr("font-size", 12)
+              .text(formatDay);
+
+            year
+              .append("g")
               .selectAll("rect")
-              .data(d => d.values, d => d.date)
-              .transition()
-              .duration(500)
-              .attr("fill", d => (legend.selected ? colorFn(d.value) : "white"));
-          }
+              .data(d => d.values)
+              .join("rect")
+              .attr("width", cellSize - 1.5)
+              .attr("height", cellSize - 1.5)
+              .attr(
+                "x",
+                (d, i) => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 10
+              )
+              .attr("y", d => countDay(d.date) * cellSize + 0.5)
+              .attr("fill", d => colorFn(d.value))
+              .append("title")
+              .text(d => `${formatDate(d.date)}: ${d.value.toFixed(2)}`);
 
-          legend
-            .selectAll("rect")
-            .data(categories)
-            .enter()
-            .append("rect")
-            .attr("fill", d => d.color)
-            .attr("x", (d, i) => legendWidth * i)
-            .attr("width", legendWidth)
-            .attr("height", 15)
-            .on("click", toggle);
+            const legend = group
+              .append("g")
+              .attr(
+                "transform",
+                `translate(10, ${years.length * yearHeight + cellSize * 4})`
+              );
 
-          legend
-            .selectAll("text")
-            .data(categories)
-            .join("text")
-            .attr("transform", "rotate(90)")
-            .attr("y", (d, i) => -legendWidth * i)
-            .attr("dy", -30)
-            .attr("x", 18)
-            .attr("text-anchor", "start")
-            .attr("font-size", 11)
-            .text(d => `${d.lowerBound.toFixed(2)} - ${d.upperBound.toFixed(2)}`);
+            const categoriesCount = 10;
+            const categories = [...Array(categoriesCount)].map((_, i) => {
+              const upperBound = (maxValue / categoriesCount) * (i + 1);
+              const lowerBound = (maxValue / categoriesCount) * i;
 
-          legend
-            .append("text")
-            .attr("dy", -5)
-            .attr("font-size", 14)
-            .attr("text-decoration", "underline")
-            .text("Click on category to select/deselect days");
-        }
+              return {
+                upperBound,
+                lowerBound,
+                color: d3.interpolateBuGn(upperBound / maxValue),
+                selected: true
+              };
+            });
 
-        draw();
-      });
+            const legendWidth = 60;
 
-      // Content for Screen 3
-      function updateContent() {
-        var selectedContinent = document.getElementById("continentDropdown").value;
-        var continentNameElement = document.getElementById("continentName");
-        var continentTextElement = document.getElementById("continentText");
-        continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
-          selectedContinent.slice(1);
-        continentTextElement.textContent = "Continents Continents Continents";
-        if (selectedContinent !== 'all') {
-          drawGeographicalMap(selectedContinent);
-        }
-      }
+            function toggle(legend) {
+              const {
+                lowerBound,
+                upperBound,
+                selected
+              } = legend;
 
-      function drawGeographicalMap(continent) {
-        var svg = d3.select("#map");
+              legend.selected = !selected;
 
-        d3.json("geo//World_Continents.geojson").then(function (continentsData) {
-          var selectedContinentData = continentsData.features.find(function (feature) {
-            return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
-          });
-          if (selectedContinentData) {
-            var projection = d3.geoNaturalEarth1()
-              .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
-            var path = d3.geoPath().projection(projection);
-            svg.selectAll("*").remove();
-            svg.selectAll("path")
-              .data([selectedContinentData])
-              .enter().append("path")
-              .attr("d", path)
-              .attr("fill", "#4adc2d")
-              .attr("stroke", "#fff")
-              .attr("stroke-width", 1);
-          }
-        }).catch(function (error) {
-          console.error("Error loading GeoJSON data:", error);
-        });
-      }
+              const highlightedDates = years.map(y => ({
+                key: y.key,
+                values: y.values.filter(
+                  v => v.value > lowerBound && v.value <= upperBound
+                )
+              }));
 
-
-      // // Contentfor Screen 3
-
-      // function updateContent() {
-      //   var selectedContinent = document.getElementById("continentDropdown").value;
-      //   var continentNameElement = document.getElementById("continentName");
-      //   var continentTextElement = document.getElementById("continentText");
-      //   continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
-      //     selectedContinent.slice(1);
-      //   continentTextElement.textContent = "Continents Continents Continents";
-      //   if (selectedContinent !== 'all') {
-      //     drawGeographicalMap(selectedContinent);
-      //   }
-      // }
-
-      // function drawGeographicalMap(continent) {
-      //   var svg = d3.select("#map");
-
-      //   d3.json("geo//World_Continents.geojson").then(function (continentsData) {
-      //     var selectedContinentData = continentsData.features.find(function (feature) {
-      //       return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
-      //     });
-      //     if (selectedContinentData) {
-      //       var projection = d3.geoNaturalEarth1()
-      //         .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
-      //       var path = d3.geoPath().projection(projection);
-      //       svg.selectAll("*").remove();
-      //       svg.selectAll("path")
-      //         .data([selectedContinentData])
-      //         .enter().append("path")
-      //         .attr("d", path)
-      //         .attr("fill", "#4adc2d")
-      //         .attr("stroke", "#fff")
-      //         .attr("stroke-width", 1);
-      //     }
-      //   }).catch(function (error) {
-      //     console.error("Error loading GeoJSON data:", error);
-      //   });
-      // }
-      const width = 500;
-      const height = 200;
-      const margin = {
-        top: 20,
-        right: 20,
-        bottom: 30,
-        left: 40
-      };
-      const svg = d3.select("#visualization").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-      const xScale = d3.scaleBand()
-        .domain(d3.range(10))
-        .range([0, width])
-        .padding(0.1);
-      const yScale = d3.scaleLinear()
-        .range([200, 0]);
-      svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xScale));
-      svg.append("g")
-        .call(d3.axisLeft(yScale));
-      svg.append("text")
-        .attr("x", width / 2)
-        .attr("y", height + margin.bottom)
-        .attr("text-anchor", "middle")
-        .text("Top 10 Teams");
-      svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", -margin.left)
-        .attr("x", -height / 2)
-        .attr("dy", "1em")
-        .attr("text-anchor", "middle")
-        .text("Matches Won");
-
-      function updateData(selectedTournament) {
-        d3.json("data/result.json").then(function (results) {
-          const filteredResults = results.filter(d => d.tournament === selectedTournament);
-          const winningHomeTeams = filteredResults.reduce((acc, d) => {
-            const teamIndex = acc.findIndex(entry => entry[0] === d.home_team);
-            if (teamIndex !== -1) {
-              acc[teamIndex][1] += d.home_score > d.away_score ? 1 : 0;
-            } else {
-              acc.push([d.home_team, d.home_score > d.away_score ? 1 : 0]);
+              year
+                .data(highlightedDates)
+                .selectAll("rect")
+                .data(d => d.values, d => d.date)
+                .transition()
+                .duration(500)
+                .attr("fill", d => (legend.selected ? colorFn(d.value) : "white"));
             }
-            return acc;
-          }, []);
 
-          yScale.domain([0, d3.max(winningHomeTeams, d => d[1])]);
-          const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
-          const bars = svg.selectAll(".bar")
-            .data(winningHomeTeams.slice(0, 10));
-          bars.exit().remove();
-          const newBars = bars.enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", (d, i) => xScale(i))
-            .attr("width", xScale.bandwidth())
-            .attr("y", height)
-            .attr("height", 0)
-            .attr("fill", (d, i) => colorScale(i));
-          const mergedBars = newBars.merge(bars);
-          mergedBars.transition()
-            .duration(1000)
-            .attr("y", d => yScale(d[1]))
-            .attr("height", d => height - yScale(d[1]));
-          svg.select(".axisLeft")
-            .call(d3.axisLeft(yScale));
-          svg.select(".label")
-            .text(selectedTournament);
+            legend
+              .selectAll("rect")
+              .data(categories)
+              .enter()
+              .append("rect")
+              .attr("fill", d => d.color)
+              .attr("x", (d, i) => legendWidth * i)
+              .attr("width", legendWidth)
+              .attr("height", 15)
+              .on("click", toggle);
+
+            legend
+              .selectAll("text")
+              .data(categories)
+              .join("text")
+              .attr("transform", "rotate(90)")
+              .attr("y", (d, i) => -legendWidth * i)
+              .attr("dy", -30)
+              .attr("x", 18)
+              .attr("text-anchor", "start")
+              .attr("font-size", 11)
+              .text(d => `${d.lowerBound.toFixed(2)} - ${d.upperBound.toFixed(2)}`);
+
+            legend
+              .append("text")
+              .attr("dy", -5)
+              .attr("font-size", 14)
+              .attr("text-decoration", "underline")
+              .text("Click on category to select/deselect days");
+          }
+
+          draw();
         });
-      }
-      updateData("AFC Asian Cup");
-    </script>
+
+        // Content for Screen 3
+        function updateContent() {
+          var selectedContinent = document.getElementById("continentDropdown").value;
+          var continentNameElement = document.getElementById("continentName");
+          var continentTextElement = document.getElementById("continentText");
+          continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
+            selectedContinent.slice(1);
+          continentTextElement.textContent = "Continents Continents Continents";
+          if (selectedContinent !== 'all') {
+            drawGeographicalMap(selectedContinent);
+          }
+        }
+
+        function drawGeographicalMap(continent) {
+          var svg = d3.select("#map");
+
+          d3.json("geo//World_Continents.geojson").then(function (continentsData) {
+            var selectedContinentData = continentsData.features.find(function (feature) {
+              return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
+            });
+            if (selectedContinentData) {
+              var projection = d3.geoNaturalEarth1()
+                .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
+              var path = d3.geoPath().projection(projection);
+              svg.selectAll("*").remove();
+              svg.selectAll("path")
+                .data([selectedContinentData])
+                .enter().append("path")
+                .attr("d", path)
+                .attr("fill", "#4adc2d")
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 1);
+            }
+          }).catch(function (error) {
+            console.error("Error loading GeoJSON data:", error);
+          });
+        }
+
+        const width = 500;
+        const height = 200;
+        const margin = {
+          top: 20,
+          right: 20,
+          bottom: 30,
+          left: 40
+        };
+        const svg = d3.select("#visualization").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        const xScale = d3.scaleBand()
+          .domain(d3.range(10))
+          .range([0, width])
+          .padding(0.1);
+        const yScale = d3.scaleLinear()
+          .range([200, 0]);
+        svg.append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(xScale));
+        svg.append("g")
+          .call(d3.axisLeft(yScale));
+        svg.append("text")
+          .attr("x", width / 2)
+          .attr("y", height + margin.bottom)
+          .attr("text-anchor", "middle")
+          .text("Top 10 Teams");
+        svg.append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", -margin.left)
+          .attr("x", -height / 2)
+          .attr("dy", "1em")
+          .attr("text-anchor", "middle")
+          .text("Matches Won");
+
+        function updateData(selectedTournament) {
+          d3.json("data/result.json").then(function (results) {
+            const filteredResults = results.filter(d => d.tournament === selectedTournament);
+            const winningHomeTeams = filteredResults.reduce((acc, d) => {
+              const teamIndex = acc.findIndex(entry => entry[0] === d.home_team);
+              if (teamIndex !== -1) {
+                acc[teamIndex][1] += d.home_score > d.away_score ? 1 : 0;
+              } else {
+                acc.push([d.home_team, d.home_score > d.away_score ? 1 : 0]);
+              }
+              return acc;
+            }, []);
+
+            yScale.domain([0, d3.max(winningHomeTeams, d => d[1])]);
+            const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+            const bars = svg.selectAll(".bar")
+              .data(winningHomeTeams.slice(0, 10));
+            bars.exit().remove();
+            const newBars = bars.enter().append("rect")
+              .attr("class", "bar")
+              .attr("x", (d, i) => xScale(i))
+              .attr("width", xScale.bandwidth())
+              .attr("y", height)
+              .attr("height", 0)
+              .attr("fill", (d, i) => colorScale(i));
+            const mergedBars = newBars.merge(bars);
+            mergedBars.transition()
+              .duration(1000)
+              .attr("y", d => yScale(d[1]))
+              .attr("height", d => height - yScale(d[1]));
+            svg.select(".axisLeft")
+              .call(d3.axisLeft(yScale));
+            svg.select(".label")
+              .text(selectedTournament);
+          });
+
+        }
+        updateData("AFC Asian Cup");
+      </script>
+    </div>
   </div>
 </body>
 

@@ -2,11 +2,15 @@
 <html lang="en">
 
 <head>
+    <!-- Meta tags for character set and viewport -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Page title -->
     <title>Statistics Page</title>
+    <!-- D3.js library for data visualization -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
+        /* Resetting some default styles and applying a basic layout */
         body {
             margin: 0;
             padding: 0;
@@ -19,6 +23,7 @@
             color: #333;
         }
 
+        /* Styling for the header section */
         header {
             background-color: #555;
             padding: 10px;
@@ -27,6 +32,7 @@
             align-items: center;
         }
 
+        /* Styling for the continent dropdown */
         select {
             margin-right: 20px;
             padding: 8px;
@@ -38,18 +44,21 @@
             cursor: pointer;
         }
 
+        /* Styling for the main content area */
         main {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
+        /* Styling for the left container (map) */
         #left-container {
             flex: 1;
             padding: 20px;
             overflow: auto;
         }
 
+        /* Styling for the right container (statistics) */
         #right-container {
             flex: 1;
             padding: 20px;
@@ -63,15 +72,18 @@
             /* Center the content vertically */
         }
 
+        /* Styling for the map SVG */
         #map {
             width: 100%;
             height: 100%;
         }
 
+        /* Styling for the visualization section */
         #visualization {
             text-align: center;
         }
 
+        /* Styling for the buttons in the visualization section */
         #visualization input {
             margin: 5px;
             padding: 8px;
@@ -79,6 +91,7 @@
             cursor: pointer;
         }
 
+        /* Styling for the SVG elements in the visualization section */
         #visualization svg {
             width: 100%;
             height: auto;
@@ -89,10 +102,12 @@
             fill: steelblue;
         }
 
+        /* Additional styles for bar graphs */
         .barAway {
             fill: orange;
         }
 
+        /* Styling for the "Next" button */
         .next-button {
             display: inline-block;
             padding: 10px 20px;
@@ -108,6 +123,7 @@
             /* Add some space at the top */
         }
 
+        /* Hover effect for the "Next" button */
         .next-button:hover {
             background-color: #45a529;
             /* Adjust hover color as needed */
@@ -129,12 +145,14 @@
     </header>
 
     <main>
+        <!-- Left container for the geographical map -->
         <div id="left-container">
             <svg id="map"></svg>
         </div>
+        <!-- Right container for continent statistics -->
         <div id="right-container">
             <h2 id="continentName">Continent: Asia</h2>
-            <p id="continentText">Continents Continents Continents</p>
+            <p id="continentText"><strong>Distribution graph for Away and Home team</strong></p>
             <div id="graphs">
                 <svg id="homeScoreGraph" width="900" height="400"></svg>
                 <svg id="awayScoreGraph" width="800" height="300"></svg>
@@ -143,16 +161,17 @@
     </main>
 
     <script>
-        // Update the updateContent function
+        // Function to update content based on selected continent
         async function updateContent() {
+            // Extract the selected continent from the dropdown
             var selectedContinent = document.getElementById("continentDropdown").value.toLowerCase();
-
+            // Elements for displaying continent information
             var continentNameElement = document.getElementById("continentName");
             var continentTextElement = document.getElementById("continentText");
-
+            // Update continent name and information
             continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
                 selectedContinent.slice(1);
-            continentTextElement.textContent = "Continents Continents Continents";
+            // continentTextElement.textContent = "Continents Continents Continents";
 
             if (selectedContinent !== 'all') {
                 drawGeographicalMap(selectedContinent);
@@ -160,23 +179,24 @@
             }
         }
 
+        // Function to draw a geographical map for the selected continent
         function drawGeographicalMap(continent) {
             var svg = d3.select("#map");
 
             d3.json("geo/World_Continents.geojson").then(function (continentsData) {
                 console.log("Loaded GeoJSON data:", continentsData);
-
+                // Find data for the selected continent
                 var selectedContinentData = continentsData.features.find(function (feature) {
                     return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
                 });
 
                 console.log("Selected Continent Data:", selectedContinentData);
-
+                // If data is found, draw the map
                 if (selectedContinentData) {
                     var projection = d3.geoNaturalEarth1()
                         .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
                     var path = d3.geoPath().projection(projection);
-
+                    // Clear existing elements and draw the path for the selected continent
                     svg.selectAll("*").remove();
 
                     svg.selectAll("path")
@@ -237,11 +257,11 @@
 
             var svgHome = d3.select("#graphs").html("").append("svg")
                 .attr("width", 800)
-                .attr("height", 300); // Adjusted height for individual graph
+                .attr("height", 320); // Adjusted height for individual graph
 
             var svgAway = d3.select("#graphs").append("svg")
                 .attr("width", 800)
-                .attr("height", 300); // Adjusted height for individual graph
+                .attr("height", 320); // Adjusted height for individual graph
 
             var margin = {
                 top: 50,
