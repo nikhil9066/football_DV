@@ -93,6 +93,7 @@
         // var matchDataPath = "updated_data.json";
         var matchDataPath = "geo/combined_data_final.json";
 
+        // Set up the SVG container for the map
         var svg = d3.select("#map");
         var margin = 40;
         var width = window.innerWidth - 2 * margin;
@@ -100,10 +101,12 @@
 
         svg.attr("width", width).attr("height", height);
 
+        // Define a projection for the map (Mercator projection)
         var projection = d3.geoMercator()
             .scale(width / 2 / Math.PI)
             .translate([width / 2, height / 2]);
-
+            
+        // Create a path generator using the projection
         var path = d3.geoPath().projection(projection);
 
         var mapGroup = svg.append("g").attr("transform", "translate(" + margin + "," + margin + ")");
