@@ -188,10 +188,8 @@
     // Read data from the JSON file using d3.json
     d3.json('data/result.json').then(data => {
       // Check if the data is an array
-      console.log("If here");
       if (!Array.isArray(data)) {
         console.error('Data is not in the expected format. Check the JSON file.');
-        console.log("After if here");
         return;
       }
 
@@ -216,14 +214,20 @@
         tournament: entry[0],
         count: entry[1]
       }));
-      // Rest of your code...
-      // Rest of your code...
 
       // Check for NaN values in the count property
       if (tournamentData.some(d => isNaN(d.count))) {
         console.error('Data contains NaN values. Check the data or processing logic.');
         return;
       }
+
+      // Create a new array with the first 10 items and a single "Others" item
+      const displayedData = tournamentData.slice(0, 10);
+      const othersData = {
+        tournament: 'Others',
+        count: d3.sum(tournamentData.slice(10), d => d.count),
+      };
+      const combinedData = [...displayedData, othersData];
 
       // Define a color scale
       const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
@@ -237,27 +241,26 @@
 
       // Create a bar chart using D3
       const xScale = d3.scaleBand()
-        .domain(tournamentData.map(d => d.tournament))
+        .domain(combinedData.map(d => d.tournament))
         .range([0, 900])
         .padding(0.1);
 
       const yScale = d3.scaleLinear()
-        .domain([0, d3.max(tournamentData, d => d.count)])
+        .domain([0, d3.max(combinedData, d => d.count)])
         .range([400, 0]);
 
       svg.selectAll('rect')
-        .data(tournamentData)
+        .data(combinedData)
         .enter()
         .append('rect')
         .attr('x', d => xScale(d.tournament))
         .attr('y', d => yScale(d.count))
         .attr('width', xScale.bandwidth())
-        .attr('height', d => 400 - yScale(d.count))
+        .attr('height', d => 403 - yScale(d.count))
         .attr('fill', d => colorScale(d.tournament));
 
       // Add axes
       const xAxis = d3.axisBottom(xScale);
-      // const yAxis = d3.axisLeft(yScale);
       const yAxis = d3.axisLeft(yScale).ticks(5).tickFormat(d => d * 1);
 
       svg.append('g')
