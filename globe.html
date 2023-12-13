@@ -86,6 +86,10 @@
 <body>
     <svg id="map"></svg>
     <div class="info-box"></div>
+    <div class="year-dropdown" style="position: absolute; top: 20px; right: 20px;">
+        <label for="year-select">Select Year:</label>
+        <select id="year-select"></select>
+    </div>
 
     <script>
         // Data paths
@@ -105,7 +109,7 @@
         var projection = d3.geoMercator()
             .scale(width / 2 / Math.PI)
             .translate([width / 2, height / 2]);
-            
+
         // Create a path generator using the projection
         var path = d3.geoPath().projection(projection);
 
@@ -144,32 +148,82 @@
 
         // Load and display match data
         d3.json(matchDataPath).then(function (matches) {
-            mapGroup.selectAll(".city")
-                .data(matches)
+            // Populate the year dropdown options
+            var years = [...new Set(matches.map(match => match.date.substr(0, 4)))]; // Extract unique years
+            var yearDropdown = d3.select("#year-select");
+            yearDropdown
+                .selectAll("option")
+                .data(years)
                 .enter()
-                .append("circle")
-                .attr("class", "city")
-                .attr("r", 4)
-                .attr("cx", function (d) {
-                    return projection([d.city_longitude, d.city_latitude])[0];
-                })
-                .attr("cy", function (d) {
-                    return projection([d.city_longitude, d.city_latitude])[1];
-                })
-                .on("mouseover", function (event, d) {
-                    if (event.target.tagName === "circle") {
-                        d3.select(this).attr("stroke", "red");
-                        var matchInfo =
-                            `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
-                        var infoBox = d3.select(".info-box");
-                        infoBox.html(matchInfo);
-                    }
-                })
-                .on("mouseout", function () {
-                    d3.select(this).attr("stroke", "none");
-                    d3.select(".info-box").html("");
-                });
+                .append("option")
+                .text(year => year)
+                .attr("value", year => year);
+
+            // Function to update data based on the selected year
+            function updateData(selectedYear) {
+                var filteredMatches = matches.filter(match => match.date.startsWith(selectedYear));
+
+                mapGroup.selectAll(".city").remove(); // Remove existing circles
+
+                mapGroup.selectAll(".city")
+                    .data(filteredMatches)
+                    .enter()
+                    .append("circle")
+                    .attr("class", "city")
+                    .attr("r", 4)
+                    .attr("cx", function (d) {
+                        return projection([d.city_longitude, d.city_latitude])[0];
+                    })
+                    .attr("cy", function (d) {
+                        return projection([d.city_longitude, d.city_latitude])[1];
+                    })
+                    .on("mouseover", function (event, d) {
+                        // ... your existing mouseover code ...
+                    })
+                    .on("mouseout", function () {
+                        // ... your existing mouseout code ...
+                    });
+            }
+
+            // Initial data display (you can set a default year)
+            updateData(years[0]);
+
+            // Handle dropdown change event
+            yearDropdown.on("change", function () {
+                var selectedYear = d3.select(this).property("value");
+                updateData(selectedYear);
+            });
         });
+
+
+        // // Load and display match data
+        // d3.json(matchDataPath).then(function (matches) {
+        //     mapGroup.selectAll(".city")
+        //         .data(matches)
+        //         .enter()
+        //         .append("circle")
+        //         .attr("class", "city")
+        //         .attr("r", 4)
+        //         .attr("cx", function (d) {
+        //             return projection([d.city_longitude, d.city_latitude])[0];
+        //         })
+        //         .attr("cy", function (d) {
+        //             return projection([d.city_longitude, d.city_latitude])[1];
+        //         })
+        //         .on("mouseover", function (event, d) {
+        //             if (event.target.tagName === "circle") {
+        //                 d3.select(this).attr("stroke", "red");
+        //                 var matchInfo =
+        //                     `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
+        //                 var infoBox = d3.select(".info-box");
+        //                 infoBox.html(matchInfo);
+        //             }
+        //         })
+        //         .on("mouseout", function () {
+        //             d3.select(this).attr("stroke", "none");
+        //             d3.select(".info-box").html("");
+        //         });
+        // });
 
         // Enable zoom
         svg.call(d3.zoom().on("zoom", function () {
