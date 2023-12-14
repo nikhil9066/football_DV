@@ -148,8 +148,10 @@
 
         // Load and display match data
         d3.json(matchDataPath).then(function (matches) {
+            // Extract unique years
+            var years = [...new Set(matches.map(match => match.date.substr(0, 4)))];
+
             // Populate the year dropdown options
-            var years = [...new Set(matches.map(match => match.date.substr(0, 4)))]; // Extract unique years
             var yearDropdown = d3.select("#year-select");
             yearDropdown
                 .selectAll("option")

@@ -467,6 +467,7 @@
               .text("Click on category to select/deselect days");
           }
 
+
           draw();
         });
 
@@ -526,7 +527,7 @@
           .range([0, width])
           .padding(0.1);
         const yScale = d3.scaleLinear()
-          .range([200, 0]);
+          .range([height, 0]);
         svg.append("g")
           .attr("transform", "translate(0," + height + ")")
           .call(d3.axisBottom(xScale));
@@ -537,6 +538,7 @@
           .attr("y", height + margin.bottom)
           .attr("text-anchor", "middle")
           .text("Top 10 Teams");
+
         svg.append("text")
           .attr("transform", "rotate(-90)")
           .attr("y", -margin.left)
@@ -544,6 +546,33 @@
           .attr("dy", "1em")
           .attr("text-anchor", "middle")
           .text("Matches Won");
+
+        let legend;
+        let legendBelow;
+
+        if (legend) {
+          legend.remove();
+        }
+
+        // Set the desired position for the legend on the right side
+        const legendX = width - 350;
+        const legendY = height / 0.75;
+
+        // Append a new legend group on the right side
+        legend = svg.append("g")
+          .attr("class", "legend")
+          .attr("transform", `translate(${legendX}, ${legendY})`);
+
+        if (legendBelow) {
+          legendBelow.remove();
+        }
+
+        const legendBelowY = height + 20;
+
+        // Append a new legend-below group
+        legendBelow = svg.append("g")
+          .attr("class", "legend-below")
+          .attr("transform", `translate(${width / 2}, ${legendBelowY})`);
 
         function updateData(selectedTournament) {
           d3.json("data/result.json").then(function (results) {
@@ -558,7 +587,13 @@
               return acc;
             }, []);
 
+            // Remove existing legend-below and update the position
+            legendBelow.selectAll("*").remove(); // Clear the existing content
+            // Update the position if needed
+            legendBelow.attr("transform", `translate(${width / 2}, ${height + 60})`);
+
             yScale.domain([0, d3.max(winningHomeTeams, d => d[1])]);
+            // yScale.domain([0, d3.max(winningHomeTeams, d => d[1]) * 100]);
             const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
             const bars = svg.selectAll(".bar")
               .data(winningHomeTeams.slice(0, 10));
@@ -575,16 +610,74 @@
               .duration(1000)
               .attr("y", d => yScale(d[1]))
               .attr("height", d => height - yScale(d[1]));
+
+            const teams = winningHomeTeams.slice(0, 10).map(d => d[0]);
+
+            const legendItems = legend.selectAll("g")
+              .data(teams);
+
+            legendItems.exit().remove();
+
+            // Enter and update legend items
+            const legendItemsEnter = legendItems.enter()
+              .append("g")
+              .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+            // Merge and update legend items
+            const mergedLegendItems = legendItems.merge(legendItemsEnter);
+
+            // Add rectangle for each legend item
+            mergedLegendItems.append("rect")
+              .attr("width", 18)
+              .attr("height", 18)
+              .style("fill", (d, i) => colorScale(i));
+
+            // Add text for each legend item
+            mergedLegendItems.append("text")
+              .attr("x", 24)
+              .attr("y", 9)
+              .attr("dy", ".35em")
+              .style("text-anchor", "start")
+              .text(d => d);
+
+            // Update fill and text for all legend items
+            mergedLegendItems.select("rect")
+              .style("fill", (d, i) => colorScale(i));
+
+            mergedLegendItems.select("text")
+              .text(d => d);
+
+            // Update axes and label
             svg.select(".axisLeft")
               .call(d3.axisLeft(yScale));
             svg.select(".label")
               .text(selectedTournament);
           });
-
         }
-        updateData("AFC Asian Cup");
       </script>
     </div>
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="phasework.html" class="btn">Go to Network Graph</a>
+    </div>
+    <style>
+      /* Add styles for the button */
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        text-align: center;
+        text-decoration: none;
+        background-color: #4CAF50;
+        color: #fff;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+    
+      /* Add hover effect for the button */
+      .btn:hover {
+        background-color: #45a049;
+      }
+    </style>
   </div>
 </body>
 
