@@ -89,21 +89,16 @@
             left: 20px;
             top: 20px;
             background: rgba(0, 0, 0, 0.7);
-            /* Semi-transparent black background */
             color: white;
             padding: 10px;
             border-radius: 5px;
             backdrop-filter: blur(5px);
-            /* Apply a blur effect to the background */
             transition: opacity 0.3s;
-            /* Add a smooth transition for opacity changes */
             opacity: 0;
-            /* Initially set to transparent */
         }
 
         .info-box:hover {
             opacity: 1;
-            /* Show the info box when hovering over it */
         }
     </style>
 </head>
@@ -130,19 +125,15 @@
 
         svg.attr("width", width).attr("height", height);
 
-        // Define a projection for the map (Mercator projection)
         var projection = d3.geoMercator()
             .scale(width / 2 / Math.PI)
             .translate([width / 2, height / 2]);
 
-        // Create a path generator using the projection
         var path = d3.geoPath().projection(projection);
 
         var mapGroup = svg.append("g").attr("transform", "translate(" + margin + "," + margin + ")");
 
-        // Load and display the map
         d3.json(geoJSONPath).then(function (world) {
-            // Create map paths
             var countries = mapGroup.selectAll(".country")
                 .data(world.features)
                 .enter().append("path")
@@ -155,19 +146,16 @@
                             `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
                         var infoBox = d3.select(".info-box");
                         infoBox.html(cityInfo);
-                        console.log(cityInfo); // Log city information to the console
-                        console.log(d); // Log the entire data object for debugging
+                        console.log(cityInfo);
+                        console.log(d);
                     }
                 })
                 .on("mouseout", function (d) {
                     d3.select(this).attr("stroke", "none");
                     var infoBox = d3.select(".info-box");
-                    infoBox.html(""); // Clear info box
+                    infoBox.html("");
                 });
 
-
-
-            // Add country labels with trimmed names
             mapGroup.selectAll("text")
                 .data(world.features)
                 .enter().append("text")
@@ -178,16 +166,12 @@
                 })
                 .attr("dy", "0.35em")
                 .text(function (d) {
-                    return d.properties.name.substr(0, 2); // Trimmed to two letters
+                    return d.properties.name.substr(0, 2);
                 });
         });
 
-        // Load and display match data
         d3.json(matchDataPath).then(function (matches) {
-            // Extract unique years
             var years = [...new Set(matches.map(match => match.date.substr(0, 4)))];
-
-            // Populate the year dropdown options
             var yearDropdown = d3.select("#year-select");
             yearDropdown
                 .selectAll("option")
@@ -200,7 +184,7 @@
             function updateData(selectedYear) {
                 var filteredMatches = matches.filter(match => match.date.startsWith(selectedYear));
 
-                mapGroup.selectAll(".city").remove(); // Remove existing circles
+                mapGroup.selectAll(".city").remove();
 
                 mapGroup.selectAll(".city")
                     .data(filteredMatches)
@@ -220,7 +204,6 @@
                     .on("mouseout", handleMouseOut);
             }
 
-            // Function to handle mouseover event for circles (cities)
             function handleMouseOver(event, d) {
                 console.log("Mouse Over Event:", event);
                 console.log("Data Object (d):", d);
@@ -230,8 +213,6 @@
                     var cityInfo =
                         `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
                     var infoBox = d3.select(".info-box");
-
-                    // Adjust the position of the info box based on mouse coordinates
                     var xPosition = event.pageX - svg.node().getBoundingClientRect().left + 10;
                     var yPosition = event.pageY - svg.node().getBoundingClientRect().top + 10;
 
@@ -239,32 +220,25 @@
                         .style("left", xPosition + "px")
                         .style("top", yPosition + "px");
 
-                    console.log("City Info:", cityInfo); // Log city information to the console
+                    console.log("City Info:", cityInfo);
                 }
             }
 
-
-            // Function to handle mouseout event
             function handleMouseOut() {
                 if (event.target.tagName === "circle") {
                     d3.select(this).attr("fill", "black");
-                    // Remove additional information display or tooltip if added in mouseover
                 }
             }
-
-            // Initial data display (you can set a default year)
             updateData(years[0]);
 
-            // Handle dropdown change event
             yearDropdown.on("change", function () {
                 var selectedYear = d3.select(this).property("value");
                 updateData(selectedYear);
             });
         });
-        // Enable zoom
         svg.call(d3.zoom().on("zoom", function () {
             if (d3.event) {
-                console.log(d3.event); // Log the event to the console
+                console.log(d3.event); 
                 mapGroup.attr("transform", d3.event.transform);
             }
         }));

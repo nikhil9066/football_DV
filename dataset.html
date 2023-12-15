@@ -37,7 +37,6 @@
         }
 
         @media (max-width: 600px) {
-            /* Add styles for smaller screens here */
         }
 
         .next-button {
@@ -75,19 +74,13 @@
     </div>
 
     <script>
-        // Function to select a random subset of data
         function getRandomSubset(data, count) {
             return d3.shuffle(data).slice(0, count);
         }
 
-        // Function to create and display a table with a heading
         function createTable(containerId, data, headingText) {
             const container = d3.select(`#${containerId}`);
-
-            // Select a random subset of 20 rows
             const randomData = getRandomSubset(data, 20);
-
-            // Create a table and display the data
             const table = container.append("table");
             const header = table.append("thead").append("tr");
             header.selectAll("th")
@@ -108,7 +101,6 @@
                 .text(d => d);
         }
 
-        // Load the JSON data using D3.js
         d3.json("data/goalscorers.json").then(function (goalscorersData) {
             createTable("goalscorers", goalscorersData, "Goalscorers");
         });
@@ -121,8 +113,6 @@
             createTable("shootouts", shootoutsData, "Shootouts");
         });
     </script>
-
-    <!-- Add Next button to redirect to globe.html -->
     <a href="globe.html" class="next-button">Next</a>
 </body>
 
