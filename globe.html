@@ -60,6 +60,9 @@
             position: absolute;
             left: 20px;
             top: 20px;
+            border: 1px solid white;
+            padding: 10px;
+            color: white;
         }
 
         .next-button {
@@ -80,6 +83,28 @@
             background-color: #eee;
             transform: scale(1.1);
         }
+
+        .info-box {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            /* Semi-transparent black background */
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            backdrop-filter: blur(5px);
+            /* Apply a blur effect to the background */
+            transition: opacity 0.3s;
+            /* Add a smooth transition for opacity changes */
+            opacity: 0;
+            /* Initially set to transparent */
+        }
+
+        .info-box:hover {
+            opacity: 1;
+            /* Show the info box when hovering over it */
+        }
     </style>
 </head>
 
@@ -92,9 +117,9 @@
     </div>
 
     <script>
+        console.log("hi");
         // Data paths
         var geoJSONPath = "geo/custom.geo.json";
-        // var matchDataPath = "updated_data.json";
         var matchDataPath = "geo/combined_data_final.json";
 
         // Set up the SVG container for the map
@@ -123,13 +148,24 @@
                 .enter().append("path")
                 .attr("d", path)
                 .attr("class", "country")
-                .on("mouseover", function (d) {
-                    d3.select(this).attr("fill", "#99ccff");
+                .on("mouseover", function (event, d) {
+                    if (event.target.tagName === "circle") {
+                        d3.select(this).attr("stroke", "red");
+                        var matchInfo =
+                            `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
+                        var infoBox = d3.select(".info-box");
+                        infoBox.html(cityInfo);
+                        console.log(cityInfo); // Log city information to the console
+                        console.log(d); // Log the entire data object for debugging
+                    }
                 })
                 .on("mouseout", function (d) {
-                    d3.select(this).attr("fill", "#ccc");
-                    mapGroup.selectAll(".match-info").remove();
+                    d3.select(this).attr("stroke", "none");
+                    var infoBox = d3.select(".info-box");
+                    infoBox.html(""); // Clear info box
                 });
+
+
 
             // Add country labels with trimmed names
             mapGroup.selectAll("text")
@@ -161,7 +197,6 @@
                 .text(year => year)
                 .attr("value", year => year);
 
-            // Function to update data based on the selected year
             function updateData(selectedYear) {
                 var filteredMatches = matches.filter(match => match.date.startsWith(selectedYear));
 
@@ -174,17 +209,47 @@
                     .attr("class", "city")
                     .attr("r", 4)
                     .attr("cx", function (d) {
-                        return projection([d.city_longitude, d.city_latitude])[0];
+                        var coordinates = projection([d.city_longitude, d.city_latitude]);
+                        return coordinates && !isNaN(coordinates[0]) ? coordinates[0] : 0;
                     })
                     .attr("cy", function (d) {
-                        return projection([d.city_longitude, d.city_latitude])[1];
+                        var coordinates = projection([d.city_longitude, d.city_latitude]);
+                        return coordinates && !isNaN(coordinates[1]) ? coordinates[1] : 0;
                     })
-                    .on("mouseover", function (event, d) {
-                        // ... your existing mouseover code ...
-                    })
-                    .on("mouseout", function () {
-                        // ... your existing mouseout code ...
-                    });
+                    .on("mouseover", handleMouseOver)
+                    .on("mouseout", handleMouseOut);
+            }
+
+            // Function to handle mouseover event for circles (cities)
+            function handleMouseOver(event, d) {
+                console.log("Mouse Over Event:", event);
+                console.log("Data Object (d):", d);
+
+                if (event.target.tagName === "circle") {
+                    d3.select(this).attr("fill", "red");
+                    var cityInfo =
+                        `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
+                    var infoBox = d3.select(".info-box");
+
+                    // Adjust the position of the info box based on mouse coordinates
+                    var xPosition = event.pageX - svg.node().getBoundingClientRect().left + 10;
+                    var yPosition = event.pageY - svg.node().getBoundingClientRect().top + 10;
+
+                    infoBox.html(cityInfo)
+                        .style("left", xPosition + "px")
+                        .style("top", yPosition + "px");
+
+                    console.log("City Info:", cityInfo); // Log city information to the console
+                }
+            }
+
+
+            // Function to handle mouseout event
+            function handleMouseOut() {
+                if (event.target.tagName === "circle") {
+                    d3.select(this).attr("fill", "black");
+                    // Remove additional information display or tooltip if added in mouseover
+                }
             }
 
             // Initial data display (you can set a default year)
@@ -196,44 +261,15 @@
                 updateData(selectedYear);
             });
         });
-
-
-        // // Load and display match data
-        // d3.json(matchDataPath).then(function (matches) {
-        //     mapGroup.selectAll(".city")
-        //         .data(matches)
-        //         .enter()
-        //         .append("circle")
-        //         .attr("class", "city")
-        //         .attr("r", 4)
-        //         .attr("cx", function (d) {
-        //             return projection([d.city_longitude, d.city_latitude])[0];
-        //         })
-        //         .attr("cy", function (d) {
-        //             return projection([d.city_longitude, d.city_latitude])[1];
-        //         })
-        //         .on("mouseover", function (event, d) {
-        //             if (event.target.tagName === "circle") {
-        //                 d3.select(this).attr("stroke", "red");
-        //                 var matchInfo =
-        //                     `Date: ${d.date}, Home Team: ${d.home_team}, Away Team: ${d.away_team}, Result: ${d.home_score}-${d.away_score}`;
-        //                 var infoBox = d3.select(".info-box");
-        //                 infoBox.html(matchInfo);
-        //             }
-        //         })
-        //         .on("mouseout", function () {
-        //             d3.select(this).attr("stroke", "none");
-        //             d3.select(".info-box").html("");
-        //         });
-        // });
-
         // Enable zoom
         svg.call(d3.zoom().on("zoom", function () {
-            mapGroup.attr("transform", d3.event.transform);
+            if (d3.event) {
+                console.log(d3.event); // Log the event to the console
+                mapGroup.attr("transform", d3.event.transform);
+            }
         }));
     </script>
 
-    <!-- Add Next button to redirect to stats.html -->
     <a href="stats.html" class="next-button">Next</a>
 </body>
 
