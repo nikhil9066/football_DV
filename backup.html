@@ -487,7 +487,7 @@
         function drawGeographicalMap(continent) {
           var svg = d3.select("#map");
 
-          d3.json("geo//World_Continents.geojson").then(function (continentsData) {
+          d3.json("geo/World_Continents.geojson").then(function (continentsData) {
             var selectedContinentData = continentsData.features.find(function (feature) {
               return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
             });
