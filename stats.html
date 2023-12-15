@@ -2,15 +2,11 @@
 <html lang="en">
 
 <head>
-    <!-- Meta tags for character set and viewport -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Page title -->
     <title>Statistics Page</title>
-    <!-- D3.js library for data visualization -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        /* Resetting some default styles and applying a basic layout */
         body {
             margin: 0;
             padding: 0;
@@ -23,7 +19,6 @@
             color: #333;
         }
 
-        /* Styling for the header section */
         header {
             background-color: #555;
             padding: 10px;
@@ -32,7 +27,6 @@
             align-items: center;
         }
 
-        /* Styling for the continent dropdown */
         select {
             margin-right: 20px;
             padding: 8px;
@@ -44,21 +38,18 @@
             cursor: pointer;
         }
 
-        /* Styling for the main content area */
         main {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
-        /* Styling for the left container (map) */
         #left-container {
             flex: 1;
             padding: 20px;
             overflow: auto;
         }
 
-        /* Styling for the right container (statistics) */
         #right-container {
             flex: 1;
             padding: 20px;
@@ -67,23 +58,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Center the content horizontally */
             justify-content: center;
-            /* Center the content vertically */
         }
 
-        /* Styling for the map SVG */
         #map {
             width: 100%;
             height: 100%;
         }
 
-        /* Styling for the visualization section */
         #visualization {
             text-align: center;
         }
 
-        /* Styling for the buttons in the visualization section */
         #visualization input {
             margin: 5px;
             padding: 8px;
@@ -91,23 +77,19 @@
             cursor: pointer;
         }
 
-        /* Styling for the SVG elements in the visualization section */
         #visualization svg {
             width: 100%;
             height: auto;
         }
 
-        /* Add your existing styles here */
         .barHome {
             fill: steelblue;
         }
 
-        /* Additional styles for bar graphs */
         .barAway {
             fill: orange;
         }
 
-        /* Styling for the "Next" button */
         .next-button {
             display: inline-block;
             padding: 10px 20px;
@@ -115,18 +97,14 @@
             text-align: center;
             text-decoration: none;
             background-color: #4adc2d;
-            /* Adjust color as needed */
             color: #fff;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 20px;
-            /* Add some space at the top */
         }
 
-        /* Hover effect for the "Next" button */
         .next-button:hover {
             background-color: #45a529;
-            /* Adjust hover color as needed */
         }
     </style>
 </head>
@@ -145,11 +123,9 @@
     </header>
 
     <main>
-        <!-- Left container for the geographical map -->
         <div id="left-container">
             <svg id="map"></svg>
         </div>
-        <!-- Right container for continent statistics -->
         <div id="right-container">
             <h2 id="continentName">Continent: Asia</h2>
             <p id="continentText"><strong>Distribution graph for Away and Home team</strong></p>
@@ -161,42 +137,33 @@
     </main>
 
     <script>
-        // Function to update content based on selected continent
         async function updateContent() {
-            // Extract the selected continent from the dropdown
             var selectedContinent = document.getElementById("continentDropdown").value.toLowerCase();
-            // Elements for displaying continent information
             var continentNameElement = document.getElementById("continentName");
             var continentTextElement = document.getElementById("continentText");
-            // Update continent name and information
             continentNameElement.textContent = "Continent: " + selectedContinent.charAt(0).toUpperCase() +
                 selectedContinent.slice(1);
-            // continentTextElement.textContent = "Continents Continents Continents";
 
             if (selectedContinent !== 'all') {
                 drawGeographicalMap(selectedContinent);
-                await updateGraph(selectedContinent); // Wait for updateGraph to complete
+                await updateGraph(selectedContinent); 
             }
         }
 
-        // Function to draw a geographical map for the selected continent
         function drawGeographicalMap(continent) {
             var svg = d3.select("#map");
 
             d3.json("geo/World_Continents.geojson").then(function (continentsData) {
                 console.log("Loaded GeoJSON data:", continentsData);
-                // Find data for the selected continent
                 var selectedContinentData = continentsData.features.find(function (feature) {
                     return feature.properties.CONTINENT.toLowerCase() === continent.toLowerCase();
                 });
 
                 console.log("Selected Continent Data:", selectedContinentData);
-                // If data is found, draw the map
                 if (selectedContinentData) {
                     var projection = d3.geoNaturalEarth1()
                         .fitSize([svg.node().clientWidth, svg.node().clientHeight], selectedContinentData);
                     var path = d3.geoPath().projection(projection);
-                    // Clear existing elements and draw the path for the selected continent
                     svg.selectAll("*").remove();
 
                     svg.selectAll("path")
@@ -212,12 +179,9 @@
             });
         }
 
-        // Initial continent
         var currentContinent;
-        var borderGap = 20; // Adjusted for better separation
-        var graphGap = 50; // Added gap between the graphs
-
-        // Function to dynamically load data from the map.json file
+        var borderGap = 20;
+        var graphGap = 50; 
         async function fetchData() {
             try {
                 const response = await fetch('geo/map.json');
@@ -231,12 +195,8 @@
         }
 
         async function updateGraph(continent) {
-            // Update the current continent
             currentContinent = continent.charAt(0).toUpperCase() + continent.slice(1);
-
             console.log('Selected continent:', currentContinent);
-
-            // D3.js code for plotting the score distribution
             const data = await fetchData();
 
             if (!data) {
@@ -257,11 +217,11 @@
 
             var svgHome = d3.select("#graphs").html("").append("svg")
                 .attr("width", 800)
-                .attr("height", 320); // Adjusted height for individual graph
+                .attr("height", 320);
 
             var svgAway = d3.select("#graphs").append("svg")
                 .attr("width", 800)
-                .attr("height", 320); // Adjusted height for individual graph
+                .attr("height", 320);
 
             var margin = {
                 top: 50,
@@ -269,18 +229,15 @@
                 bottom: 50,
                 left: 50
             };
-            var width = 400 - margin.left - margin.right; // Adjusted width for individual graph
-            var height = 300 - margin.top - margin.bottom; // Adjusted height for individual graph
+            var width = 400 - margin.left - margin.right; 
+            var height = 300 - margin.top - margin.bottom;
 
-            // Create a group for home scores
             var homeScoreGroup = svgHome.append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            // Create a group for away scores
             var awayScoreGroup = svgAway.append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            // Fetch home and away scores data for the selected continent
             var homeScores = data[currentContinent].map(function (d) {
                 return d.home_score;
             });
@@ -288,7 +245,6 @@
                 return d.away_score;
             });
 
-            // Create histogram scales for home scores
             var xHome = d3.scaleLinear()
                 .domain([d3.min(homeScores), d3.max(homeScores)])
                 .range([0, width]);
@@ -296,7 +252,6 @@
             var yHome = d3.scaleLinear()
                 .range([height, 0]);
 
-            // Create histogram scales for away scores
             var xAway = d3.scaleLinear()
                 .domain([d3.min(awayScores), d3.max(awayScores)])
                 .range([0, width]);
@@ -304,7 +259,6 @@
             var yAway = d3.scaleLinear()
                 .range([height, 0]);
 
-            // Generate histograms for home scores
             var histogramHome = d3.histogram()
                 .domain(xHome.domain())
                 .thresholds(xHome.ticks(20));
@@ -315,7 +269,6 @@
                 return d.length;
             })]);
 
-            // Create bars for home scores
             homeScoreGroup.selectAll(".barHome")
                 .data(binsHome)
                 .enter().append("rect")
@@ -333,7 +286,6 @@
                     return height - yHome(d.length);
                 });
 
-            // Generate histograms for away scores
             var histogramAway = d3.histogram()
                 .domain(xAway.domain())
                 .thresholds(xAway.ticks(20));
@@ -344,7 +296,6 @@
                 return d.length;
             })]);
 
-            // Create bars for away scores
             awayScoreGroup.selectAll(".barAway")
                 .data(binsAway)
                 .enter().append("rect")
@@ -362,7 +313,6 @@
                     return height - yAway(d.length);
                 });
 
-            // Add axis labels and titles for home scores
             homeScoreGroup.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(xHome));
@@ -375,7 +325,6 @@
                 .style("text-anchor", "middle")
                 .text("Home Score");
 
-            // Add axis labels and titles for away scores
             awayScoreGroup.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(xAway));
@@ -388,7 +337,6 @@
                 .style("text-anchor", "middle")
                 .text("Away Score");
 
-            // Add a border and heading for Distribution of Home Scores
             homeScoreGroup.append("rect")
                 .attr("x", -borderGap)
                 .attr("y", -borderGap)
@@ -397,7 +345,6 @@
                 .style("stroke", "black")
                 .style("fill", "none");
 
-            // Add a border and heading for Distribution of Away Scores
             awayScoreGroup.append("rect")
                 .attr("x", -borderGap)
                 .attr("y", -borderGap)
@@ -406,7 +353,6 @@
                 .style("stroke", "black")
                 .style("fill", "none");
 
-            // Add heading for Distribution of Home Scores
             homeScoreGroup.append("text")
                 .attr("x", width / 2)
                 .attr("y", -borderGap / 10)
@@ -414,7 +360,6 @@
                 .style("font-weight", "bold")
                 .text("Distribution of Home Scores");
 
-            // Add heading for Distribution of Away Scores
             awayScoreGroup.append("text")
                 .attr("x", width / 2)
                 .attr("y", -borderGap / 10)
@@ -422,13 +367,11 @@
                 .style("font-weight", "bold")
                 .text("Distribution of Away Scores");
 
-            // Add x-axis label for home scores
             homeScoreGroup.append("text")
                 .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
                 .style("text-anchor", "middle")
                 .text("Home Score");
 
-            // Add y-axis label for home scores
             homeScoreGroup.append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", -margin.left)
@@ -437,13 +380,11 @@
                 .style("text-anchor", "middle")
                 .text("Frequency");
 
-            // Add x-axis label for away scores
             awayScoreGroup.append("text")
                 .attr("transform", "translate(" + (width / 2) + "," + (height + margin.top + 50) + ")")
                 .style("text-anchor", "middle")
                 .text("Away Score");
 
-            // Add y-axis label for away scores
             awayScoreGroup.append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", -margin.left)
@@ -453,7 +394,6 @@
                 .text("Frequency");
         }
         document.querySelector('.next-button').addEventListener('click', function () {
-            // Perform any actions or navigate to another page
             window.location.href = 'nextPage.html';
         });
     </script>

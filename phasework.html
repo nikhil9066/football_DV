@@ -20,23 +20,21 @@
   </style>
 </head>
 <body>
+  <h1>Network Graph</h1>
   <script src="https://d3js.org/d3.v5.min.js"></script>
   <script>
-    // Function to fetch JSON data
     async function fetchData(url) {
       const response = await fetch(url);
       const data = await response.json();
       return data;
     }
 
-    // Fetch the data from JSON files
     Promise.all([
       fetchData('data/goalscorers.json'),
       fetchData('data/result.json'),
       fetchData('data/shootouts.json')
     ]).then(([goalscorersData, resultsData, shootoutsData]) => {
 
-      // Combine the data for linking nodes
       const allTeams = Array.from(new Set([...goalscorersData.map(d => d.team), ...resultsData.map(d => d.home_team), ...resultsData.map(d => d.away_team), ...shootoutsData.map(d => d.home_team), ...shootoutsData.map(d => d.away_team)]));
 
       const links = [];
@@ -50,31 +48,26 @@
 
       const nodes = allTeams.map(team => ({ team }));
 
-      // Set up SVG canvas dimensions to fill the entire screen
       const width = window.innerWidth;
       const height = window.innerHeight;
 
-      // Create SVG canvas
       const svg = d3.select('body').append('svg')
         .attr('width', width)
         .attr('height', height)
         .call(d3.zoom().on('zoom', zoomed));
 
-      const container = svg.append('g'); // Container for nodes and links
+      const container = svg.append('g');
 
-      // Create force simulation
       const simulation = d3.forceSimulation(nodes)
         .force('link', d3.forceLink(links).id(d => d.team))
         .force('charge', d3.forceManyBody().strength(-50))
         .force('center', d3.forceCenter(width / 2, height / 2));
 
-      // Draw links
       const link = container.selectAll('.link')
         .data(links)
         .enter().append('line')
         .attr('class', 'link');
 
-      // Draw nodes
       const node = container.selectAll('.node')
         .data(nodes)
         .enter().append('circle')
@@ -85,7 +78,6 @@
           .on('drag', dragged)
           .on('end', dragended));
 
-      // Add labels to nodes
       const label = container.selectAll(null)
         .data(nodes)
         .enter().append('text')
@@ -94,7 +86,6 @@
         .attr('dx', 12)
         .attr('dy', 4);
 
-      // Update positions on each tick
       simulation.on('tick', () => {
         link
           .attr('x1', d => d.source.x)
@@ -111,7 +102,6 @@
           .attr('y', d => d.y);
       });
 
-      // Functions for drag behavior
       function dragstarted(d) {
         if (!d3.event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
@@ -129,7 +119,6 @@
         d.fy = null;
       }
 
-      // Function for zoom behavior
       function zoomed() {
         container.attr('transform', d3.event.transform);
       }

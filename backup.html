@@ -33,7 +33,6 @@
       flex-direction: column;
       background-color: #fdffe1;
       margin-bottom: 20px;
-      /* Light background color */
     }
 
     .top-section {
@@ -42,10 +41,8 @@
       flex-direction: column;
       justify-content: center;
       align-items: flex-start;
-      /* Align content to the top */
       border: 1px solid #ddd;
       padding: 100px;
-      /* Add padding for better spacing */
     }
 
     .left-container .top-section,
@@ -92,7 +89,6 @@
     }
 
     .right-container {
-      /* border-left: 1px solid #ccc; */
       border-left: 1px solid #ccc;
       display: flex;
       flex-direction: column;
@@ -100,17 +96,13 @@
 
     .right-container>div {
       margin-top: 20px;
-      /* Add margin to create space between buttons and the top */
       text-align: center;
-      /* Center align the buttons */
     }
 
     .right-container input {
       margin-bottom: 10px;
-      /* Add margin to create space between buttons */
     }
 
-    /* Integrate D3 Code */
     .d3-container {
       width: 100%;
       height: 100%;
@@ -133,7 +125,6 @@
 
     #svg {
       margin: 0 30%;
-      /* Adjust the right margin to move it towards the left */
       display: block;
     }
 
@@ -141,7 +132,6 @@
       margin: 0 auto;
       text-align: center;
       width: 60%;
-      /* Adjust the width as needed */
     }
 
     #visualization svg {
@@ -175,25 +165,21 @@
           <input type="button" value="UEFA Nations League" onclick="updateData('UEFA Nations League')">
           <input type="button" value="UEFA Euro" onclick="updateData('UEFA Euro')">
         </div>
-        <div id="visualization"></div> <!-- Bar chart -->
-        <div id="map"></div> <!-- Interactive map -->
+        <div id="visualization"></div>
+        <div id="map"></div>
       </div>
     </div>
   </div>
 
-  <!-- Integrate D3 Code -->
   <script src="https://d3js.org/d3.v6.min.js"></script>
 
   <script>
-    // Read data from the JSON file using d3.json
     d3.json('data/result.json').then(data => {
-      // Check if the data is an array
       if (!Array.isArray(data)) {
         console.error('Data is not in the expected format. Check the JSON file.');
         return;
       }
 
-      // Check for NaN values in the data
       const tournamentCounts = {};
 
       data.forEach(d => {
@@ -215,31 +201,24 @@
         count: entry[1]
       }));
 
-      // Check for NaN values in the count property
       if (tournamentData.some(d => isNaN(d.count))) {
         console.error('Data contains NaN values. Check the data or processing logic.');
         return;
       }
 
-      // Create a new array with the first 10 items and a single "Others" item
       const displayedData = tournamentData.slice(0, 10);
       const othersData = {
         tournament: 'Others',
         count: d3.sum(tournamentData.slice(10), d => d.count),
       };
       const combinedData = [...displayedData, othersData];
-
-      // Define a color scale
       const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
-
-      // Set up the SVG container with adjusted position
       const svg = d3.select('#d3-container').append('svg')
         .attr('width', '10%')
         .attr('height', '100%')
         .append('g')
         .attr('transform', 'translate(45, 25)');
 
-      // Create a bar chart using D3
       const xScale = d3.scaleBand()
         .domain(combinedData.map(d => d.tournament))
         .range([0, 900])
@@ -259,7 +238,6 @@
         .attr('height', d => 403 - yScale(d.count))
         .attr('fill', d => colorScale(d.tournament));
 
-      // Add axes
       const xAxis = d3.axisBottom(xScale);
       const yAxis = d3.axisLeft(yScale).ticks(5).tickFormat(d => d * 1);
 
@@ -273,7 +251,6 @@
       svg.append('g')
         .call(yAxis);
 
-      // Add labels
       svg.append('text')
         .attr('x', 410)
         .attr('y', 570)
@@ -299,9 +276,7 @@
       <h2>Number of Matched played</h2>
       <svg id="svg"></svg>
       <script>
-        // Fetch the data from the JSON file
         d3.json("data/matches_per_date.json").then(data => {
-          // Sort the data by date
           data.sort((a, b) => new Date(a.Date) - new Date(b.Date));
 
           const dateValues = data.map(dv => ({
@@ -471,7 +446,6 @@
           draw();
         });
 
-        // Content for Screen 3
         function updateContent() {
           var selectedContinent = document.getElementById("continentDropdown").value;
           var continentNameElement = document.getElementById("continentName");
@@ -554,11 +528,9 @@
           legend.remove();
         }
 
-        // Set the desired position for the legend on the right side
         const legendX = width - 350;
         const legendY = height / 0.75;
 
-        // Append a new legend group on the right side
         legend = svg.append("g")
           .attr("class", "legend")
           .attr("transform", `translate(${legendX}, ${legendY})`);
@@ -569,7 +541,6 @@
 
         const legendBelowY = height + 20;
 
-        // Append a new legend-below group
         legendBelow = svg.append("g")
           .attr("class", "legend-below")
           .attr("transform", `translate(${width / 2}, ${legendBelowY})`);
@@ -587,13 +558,10 @@
               return acc;
             }, []);
 
-            // Remove existing legend-below and update the position
-            legendBelow.selectAll("*").remove(); // Clear the existing content
-            // Update the position if needed
+            legendBelow.selectAll("*").remove();
             legendBelow.attr("transform", `translate(${width / 2}, ${height + 60})`);
 
             yScale.domain([0, d3.max(winningHomeTeams, d => d[1])]);
-            // yScale.domain([0, d3.max(winningHomeTeams, d => d[1]) * 100]);
             const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
             const bars = svg.selectAll(".bar")
               .data(winningHomeTeams.slice(0, 10));
@@ -618,21 +586,17 @@
 
             legendItems.exit().remove();
 
-            // Enter and update legend items
             const legendItemsEnter = legendItems.enter()
               .append("g")
               .attr("transform", (d, i) => `translate(0, ${i * 20})`);
 
-            // Merge and update legend items
             const mergedLegendItems = legendItems.merge(legendItemsEnter);
 
-            // Add rectangle for each legend item
             mergedLegendItems.append("rect")
               .attr("width", 18)
               .attr("height", 18)
               .style("fill", (d, i) => colorScale(i));
 
-            // Add text for each legend item
             mergedLegendItems.append("text")
               .attr("x", 24)
               .attr("y", 9)
@@ -640,15 +604,13 @@
               .style("text-anchor", "start")
               .text(d => d);
 
-            // Update fill and text for all legend items
-            mergedLegendItems.select("rect")
+              mergedLegendItems.select("rect")
               .style("fill", (d, i) => colorScale(i));
 
             mergedLegendItems.select("text")
               .text(d => d);
 
-            // Update axes and label
-            svg.select(".axisLeft")
+              svg.select(".axisLeft")
               .call(d3.axisLeft(yScale));
             svg.select(".label")
               .text(selectedTournament);
@@ -660,7 +622,6 @@
       <a href="phasework.html" class="btn">Go to Network Graph</a>
     </div>
     <style>
-      /* Add styles for the button */
       .btn {
         display: inline-block;
         padding: 10px 20px;
@@ -673,7 +634,6 @@
         transition: background-color 0.3s ease;
       }
     
-      /* Add hover effect for the button */
       .btn:hover {
         background-color: #45a049;
       }
